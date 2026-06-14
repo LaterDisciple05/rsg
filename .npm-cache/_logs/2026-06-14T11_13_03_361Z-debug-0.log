@@ -1,0 +1,27 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.13.0
+2 info using node@v24.16.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\xampp\htdocs\rsg\rsg\.npmrc
+5 silly config load:file:C:\Users\aksha\.npmrc
+6 silly config load:file:C:\Users\aksha\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install @prisma/adapter-pg pg
+8 verbose argv "install" "@prisma/adapter-pg" "pg" "--cache" ".\\.npm-cache"
+9 verbose logfile logs-max:10 dir:C:\xampp\htdocs\rsg\rsg\.npm-cache\_logs\2026-06-14T11_13_03_361Z-
+10 verbose logfile C:\xampp\htdocs\rsg\rsg\.npm-cache\_logs\2026-06-14T11_13_03_361Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+14 silly idealTree buildDeps
+15 silly fetch manifest @prisma/adapter-pg@*
+16 silly packumentCache full:https://registry.npmjs.org/@prisma%2fadapter-pg cache-miss
+17 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with EACCES
+18 http fetch GET https://registry.npmjs.org/@prisma%2fadapter-pg attempt 1 failed with EACCES
+19 http fetch GET https://registry.npmjs.org/npm attempt 2 failed with EACCES
+20 http fetch GET https://registry.npmjs.org/@prisma%2fadapter-pg attempt 2 failed with EACCES
+21 http fetch GET https://registry.npmjs.org/npm attempt 3 failed with EACCES
+22 http fetch GET https://registry.npmjs.org/@prisma%2fadapter-pg attempt 3 failed with EACCES
+23 silly fetch manifest pg@*
+24 silly packumentCache full:https://registry.npmjs.org/pg cache-miss
+25 http fetch GET https://registry.npmjs.org/pg attempt 1 failed with EACCES
+26 http fetch GET https://registry.npmjs.org/pg attempt 2 failed with EACCES
