@@ -25,14 +25,14 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
         <div className="rounded-lg border border-rsg-line bg-white p-7 shadow-sm">
           <Link
             href="/"
-            className="relative mx-auto block h-20 w-72"
+            className="relative mx-auto block h-32 w-80"
             aria-label="Rising Sun Global home"
           >
             <Image
               src="/rsg_logo2.png"
               alt="Rising Sun Global"
               fill
-              className="object-contain"
+              className="object-contain scale-150"
               priority
             />
           </Link>

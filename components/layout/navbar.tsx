@@ -68,10 +68,10 @@ export default function Navbar() {
         </div>
       </div>
 
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 lg:px-8">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-1 lg:px-8">
         <Link
           href="/"
-          className="relative h-16 w-60 shrink-0 sm:h-[72px] sm:w-72"
+          className="relative h-20 w-72 shrink-0 sm:h-[84px] sm:w-[320px] lg:h-[92px] lg:w-[350px]"
           aria-label="Rising Sun Global home"
           onClick={() => setIsOpen(false)}
         >
@@ -79,7 +79,7 @@ export default function Navbar() {
             src="/rsg_logo2.png"
             alt="Rising Sun Global"
             fill
-            className="object-contain object-left"
+            className="object-contain object-left scale-150 origin-left"
             priority
           />
         </Link>

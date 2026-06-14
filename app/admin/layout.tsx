@@ -28,13 +28,13 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen bg-rsg-paper text-rsg-ink">
       <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-rsg-line bg-white lg:block">
-        <div className="border-b border-rsg-line px-6 py-5">
-          <Link href="/admin" className="relative block h-16 w-56">
+        <div className="border-b border-rsg-line px-6 py-4">
+          <Link href="/admin" className="relative block h-20 w-64">
             <Image
               src="/rsg_logo2.png"
               alt="Rising Sun Global"
               fill
-              className="object-contain object-left"
+              className="object-contain object-left scale-125 origin-left"
               priority
             />
           </Link>

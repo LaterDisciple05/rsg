@@ -9,15 +9,11 @@ import Services from "@/components/sections/services";
 import Testimonials from "@/components/sections/testimonials";
 import TrustStrip from "@/components/sections/trust-strip";
 import WhyChoose from "@/components/sections/why-choose";
+import BrandIntro from "@/components/shared/brand-intro";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-/** 
- * Force Refresh: 2026-06-14T17:45:00 
- * This comment is here to force Next.js to re-compile this file 
- * and pick up the new Prisma Client schema.
- */
 export default async function HomePage() {
   const [
     company,
@@ -87,6 +83,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <BrandIntro />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

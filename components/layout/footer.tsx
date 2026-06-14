@@ -18,14 +18,14 @@ export default function Footer() {
           <div>
             <Link
               href="/"
-              className="relative block h-16 w-64"
+              className="relative -ml-30 block h-32 w-96"
               aria-label="Rising Sun Global home"
             >
               <Image
                 src="/rsg_logo2.png"
                 alt="Rising Sun Global"
                 fill
-                className="object-contain"
+                className="object-contain scale-150 origin-left"
               />
             </Link>
             <p className="mt-5 max-w-xl text-sm leading-6 text-rsg-muted">
