@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { AdminNotice, DeleteButton, FileUpload, PageIntro, RelationSelect, SaveButton, TextArea, TextInput, VisibilitySelect } from "../_components";
+import { AdminNotice, DeleteButton, FileUpload, PageIntro, SaveButton, TextArea, TextInput, VisibilitySelect } from "../_components";
 import { deleteProjectAction, saveProjectAction } from "../actions";
 import { prisma } from "@/lib/prisma";
 
@@ -28,15 +28,9 @@ function StatusSelect({ defaultValue = "PLANNED" }: { defaultValue?: string }) {
 export default async function ProjectsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const projects = await prisma.project.findMany({
-    include: { country: true, industry: true, images: true },
+    include: { images: true },
     orderBy: { createdAt: "desc" },
   });
-
-  const countries = await prisma.country.findMany({ where: { isActive: true }, orderBy: { name: "asc" } });
-  const industries = await prisma.industry.findMany({ where: { visibility: "PUBLIC" }, orderBy: { sortOrder: "asc" } });
-
-  const countryOptions = countries.map(c => ({ id: c.id, name: c.name }));
-  const industryOptions = industries.map(i => ({ id: i.id, name: i.title }));
 
   return (
     <div className="grid gap-6">
@@ -53,8 +47,8 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
           <TextInput name="title" label="Title" required />
           <TextInput name="slug" label="Slug" />
           <TextInput name="category" label="Category" />
-          <RelationSelect name="countryId" label="Country" options={countryOptions} />
-          <RelationSelect name="industryId" label="Industry" options={industryOptions} />
+          <TextInput name="country" label="Country" />
+          <TextInput name="industry" label="Industry" />
           <StatusSelect />
           <VisibilitySelect defaultValue="PRIVATE" />
           <label className="flex items-center gap-3 rounded-md border border-rsg-line px-4 py-3 text-sm font-bold text-rsg-charcoal">
@@ -77,8 +71,8 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
               <TextInput name="title" label="Title" defaultValue={project.title} required />
               <TextInput name="slug" label="Slug" defaultValue={project.slug} required />
               <TextInput name="category" label="Category" defaultValue={project.category ?? ""} />
-              <RelationSelect name="countryId" label="Country" options={countryOptions} defaultValue={project.countryId} />
-              <RelationSelect name="industryId" label="Industry" options={industryOptions} defaultValue={project.industryId} />
+              <TextInput name="country" label="Country" defaultValue={project.country ?? ""} />
+              <TextInput name="industry" label="Industry" defaultValue={project.industry ?? ""} />
               <StatusSelect defaultValue={project.status} />
               <VisibilitySelect defaultValue={project.visibility} />
               <label className="flex items-center gap-3 rounded-md border border-rsg-line px-4 py-3 text-sm font-bold text-rsg-charcoal">

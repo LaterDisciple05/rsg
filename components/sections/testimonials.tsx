@@ -1,5 +1,6 @@
 import { Quote, ShieldCheck, UserCheck } from "lucide-react";
 import Container from "@/components/ui/container";
+import TestimonialSlider from "./testimonial-slider";
 
 type PublicTestimonial = {
   id: string;
@@ -47,29 +48,7 @@ export default function Testimonials({
         </div>
 
         {testimonials.length ? (
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            {testimonials.map((testimonial) => (
-              <article
-                key={testimonial.id}
-                className="rounded-lg border border-rsg-line bg-rsg-paper p-6"
-              >
-                <Quote className="text-rsg-orange-dark" size={26} />
-                <p className="mt-5 text-base leading-7 text-rsg-ink">
-                  {testimonial.message || "Trusted business feedback."}
-                </p>
-                <div className="mt-6 border-t border-rsg-line pt-4">
-                  <h3 className="text-base font-black text-rsg-ink">
-                    {testimonial.customerName || "RSG customer"}
-                  </h3>
-                  {testimonial.companyName ? (
-                    <p className="mt-1 text-sm font-semibold text-rsg-muted">
-                      {testimonial.companyName}
-                    </p>
-                  ) : null}
-                </div>
-              </article>
-            ))}
-          </div>
+          <TestimonialSlider testimonials={testimonials} />
         ) : (
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {trustItems.map((item) => {

@@ -53,7 +53,6 @@ model Country {
   name      String    @unique
   code      String?   @unique
   isActive  Boolean   @default(true)
-  projects  Project[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -77,7 +76,6 @@ model Industry {
   description String?
   sortOrder   Int        @default(0)
   visibility  Visibility @default(PUBLIC)
-  projects    Project[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -98,16 +96,13 @@ model Project {
   slug        String         @unique
   description String?
   category    String?
-  countryId   String?
-  industryId  String?
+  country     String?
+  industry    String?
   featured    Boolean        @default(false)
   visibility  Visibility     @default(PRIVATE)
   status      ProjectStatus  @default(PLANNED)
   metadata    Json?
-  country     Country?       @relation(fields: [countryId], references: [id])
-  industry    Industry?      @relation(fields: [industryId], references: [id])
   images      ProjectImage[]
-  documents   Document[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 }
@@ -138,8 +133,6 @@ model Document {
   fileUrl     String
   description String?
   visibility  Visibility @default(PRIVATE)
-  projectId   String?
-  project     Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }

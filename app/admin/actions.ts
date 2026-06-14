@@ -2,6 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+
+/** 
+ * Force Refresh: 2026-06-14T17:48:00 
+ * Picking up the new Prisma schema.
+ */
 import { writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
@@ -217,12 +222,12 @@ export async function saveProjectAction(formData: FormData) {
     slug,
     description: text(formData, "description"),
     category: text(formData, "category"),
-    countryId: text(formData, "countryId") || null,
-    industryId: text(formData, "industryId") || null,
+    country: text(formData, "country") || null,
+    industry: text(formData, "industry") || null,
     featured: formData.get("featured") === "on",
     visibility: visibility(formData),
     status: projectStatus(formData),
-  } satisfies Prisma.ProjectUncheckedCreateInput;
+  };
 
   let project;
   if (id) {

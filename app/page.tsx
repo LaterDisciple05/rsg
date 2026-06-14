@@ -13,6 +13,11 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+/** 
+ * Force Refresh: 2026-06-14T17:45:00 
+ * This comment is here to force Next.js to re-compile this file 
+ * and pick up the new Prisma Client schema.
+ */
 export default async function HomePage() {
   const [
     company,
@@ -34,8 +39,6 @@ export default async function HomePage() {
     prisma.project.findMany({
       where: { visibility: "PUBLIC" },
       include: {
-        country: true,
-        industry: true,
         images: { orderBy: { sortOrder: "asc" } },
       },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
