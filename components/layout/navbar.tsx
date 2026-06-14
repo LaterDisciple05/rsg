@@ -10,6 +10,8 @@ const navLinks = [
   { name: "About", href: "/#about" },
   { name: "Services", href: "/#services" },
   { name: "Materials", href: "/#materials" },
+  { name: "Projects", href: "/#projects" },
+  { name: "Testimonials", href: "/#testimonials" },
   { name: "Why RSG", href: "/#why-rsg" },
   { name: "Contact", href: "/#contact" },
 ];
@@ -20,6 +22,15 @@ const whatsappHref =
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    // Only prevent navigation and trigger animation if we are already on the homepage
+    if (window.location.pathname === "/") {
+      e.preventDefault();
+      window.dispatchEvent(new CustomEvent("trigger-rsg-intro"));
+    }
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -73,7 +84,7 @@ export default function Navbar() {
           href="/"
           className="relative h-20 w-72 shrink-0 sm:h-[84px] sm:w-[320px] lg:h-[92px] lg:w-[350px]"
           aria-label="Rising Sun Global home"
-          onClick={() => setIsOpen(false)}
+          onClick={handleLogoClick}
         >
           <Image
             src="/rsg_logo2.png"

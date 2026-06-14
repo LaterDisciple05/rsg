@@ -6,6 +6,8 @@ const footerLinks = [
   { name: "About", href: "/#about" },
   { name: "Services", href: "/#services" },
   { name: "Materials", href: "/#materials" },
+  { name: "Projects", href: "/#projects" },
+  { name: "Testimonials", href: "/#testimonials" },
   { name: "Why RSG", href: "/#why-rsg" },
   { name: "Contact", href: "/#contact" },
 ];
