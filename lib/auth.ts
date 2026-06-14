@@ -44,8 +44,8 @@ export function getAdminCredentials() {
 
 export async function createAdminSession() {
   const expiresAt = Date.now() + SESSION_MAX_AGE_SECONDS * 1000;
-  const payload = `${getAdminEmail()}.${expiresAt}`;
-  const value = `${payload}.${sign(payload)}`;
+  const payload = `${getAdminEmail()}|${expiresAt}`;
+  const value = `${payload}|${sign(payload)}`;
   const cookieStore = await cookies();
 
   cookieStore.set(COOKIE_NAME, value, {
@@ -70,14 +70,14 @@ export async function getAdminSession() {
     return null;
   }
 
-  const parts = session.split(".");
+  const parts = session.split("|");
 
   if (parts.length !== 3) {
     return null;
   }
 
   const [email, expiresAt, signature] = parts;
-  const payload = `${email}.${expiresAt}`;
+  const payload = `${email}|${expiresAt}`;
 
   if (!safeEqual(signature, sign(payload))) {
     return null;

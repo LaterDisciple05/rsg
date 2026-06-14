@@ -1,17 +1,17 @@
 import { AdminNotice, DeleteButton, PageIntro, SaveButton } from "../_components";
 import { deleteInquiryAction, updateInquiryStatusAction } from "../actions";
-import { listInquiries } from "@/lib/cms-db";
+import { prisma } from "@/lib/prisma";
 
 type PageProps = {
   searchParams: Promise<{ saved?: string; deleted?: string }>;
 };
 
-function StatusSelect({ defaultValue }: { defaultValue: string }) {
+function StatusSelect({ defaultValue = "NEW" }: { defaultValue?: string }) {
   return (
     <select
       name="status"
       defaultValue={defaultValue}
-      className="rounded-md border border-rsg-line bg-white px-4 py-3 text-sm font-semibold text-rsg-ink outline-none focus:border-rsg-orange"
+      className="rounded-md border border-rsg-line bg-white px-3 py-2 text-xs font-bold text-rsg-ink outline-none focus:border-rsg-orange"
     >
       <option value="NEW">New</option>
       <option value="CONTACTED">Contacted</option>
@@ -25,45 +25,48 @@ function StatusSelect({ defaultValue }: { defaultValue: string }) {
 
 export default async function InquiriesPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const inquiries = listInquiries();
+  const inquiries = await prisma.inquiry.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="grid gap-6">
       <PageIntro
         kicker="Inquiries"
-        title="Manage Customer Inquiries"
-        body="Track incoming leads and update their status as the business conversation progresses."
+        title="Customer Leads"
+        body="Review and manage business inquiries received through the website."
       />
       <AdminNotice saved={params.saved} deleted={params.deleted} />
 
       <div className="grid gap-4">
+        {inquiries.length === 0 && (
+          <div className="rounded-lg border border-dashed border-rsg-line p-12 text-center">
+            <p className="text-sm font-bold text-rsg-muted">No inquiries yet.</p>
+          </div>
+        )}
+
         {inquiries.map((inquiry) => (
-          <article key={inquiry.id} className="rounded-lg border border-rsg-line bg-white p-6 shadow-sm">
-            <div className="grid gap-6 lg:grid-cols-[1fr_auto]">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.14em] text-rsg-orange-dark">
-                  {inquiry.status}
-                </p>
-                <h2 className="mt-2 text-xl font-black text-rsg-ink">
-                  {inquiry.name || "Unnamed inquiry"}
-                </h2>
-                <div className="mt-4 grid gap-2 text-sm leading-6 text-rsg-muted md:grid-cols-2">
-                  <p><strong>Company:</strong> {inquiry.company || "-"}</p>
-                  <p><strong>Email:</strong> {inquiry.email || "-"}</p>
-                  <p><strong>Phone:</strong> {inquiry.phone || "-"}</p>
-                  <p><strong>Country:</strong> {inquiry.country || "-"}</p>
-                  <p><strong>Material:</strong> {inquiry.material || "-"}</p>
-                  <p><strong>Quantity:</strong> {inquiry.quantity || "-"}</p>
+          <div key={inquiry.id} className="rounded-lg border border-rsg-line bg-white p-6 shadow-sm">
+            <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+              <div className="grid gap-1">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-lg font-black text-rsg-ink">
+                    {inquiry.name || "Anonymous"}
+                  </h2>
+                  <span className="rounded-full bg-rsg-orange-soft px-3 py-1 text-[10px] font-black uppercase tracking-wider text-rsg-orange-dark">
+                    {inquiry.status}
+                  </span>
                 </div>
-                {inquiry.message ? (
-                  <p className="mt-4 rounded-md bg-rsg-paper p-4 text-sm leading-6 text-rsg-charcoal">
-                    {inquiry.message}
-                  </p>
-                ) : null}
+                <p className="text-sm font-bold text-rsg-muted">
+                  {inquiry.company ? `${inquiry.company} • ` : ""}{inquiry.email} • {inquiry.phone}
+                </p>
+                <p className="mt-1 text-xs text-rsg-muted">
+                  Received on {new Date(inquiry.createdAt).toLocaleString()}
+                </p>
               </div>
 
-              <div className="grid content-start gap-3">
-                <form action={updateInquiryStatusAction} className="grid gap-3">
+              <div className="flex items-center gap-2">
+                <form action={updateInquiryStatusAction} className="flex items-center gap-2">
                   <input type="hidden" name="id" value={inquiry.id} />
                   <StatusSelect defaultValue={inquiry.status} />
                   <SaveButton label="Update" />
@@ -74,15 +77,31 @@ export default async function InquiriesPage({ searchParams }: PageProps) {
                 </form>
               </div>
             </div>
-          </article>
+
+            <div className="mt-6 grid gap-4 rounded-md border border-rsg-line bg-rsg-paper p-4 lg:grid-cols-3">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-rsg-muted">Country</p>
+                <p className="mt-1 text-sm font-bold text-rsg-charcoal">{inquiry.country || "Not specified"}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-rsg-muted">Material</p>
+                <p className="mt-1 text-sm font-bold text-rsg-charcoal">{inquiry.material || "Not specified"}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-rsg-muted">Quantity</p>
+                <p className="mt-1 text-sm font-bold text-rsg-charcoal">{inquiry.quantity || "Not specified"}</p>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-rsg-muted">Message</p>
+              <p className="mt-2 text-sm leading-relaxed text-rsg-ink">
+                {inquiry.message || "No message provided."}
+              </p>
+            </div>
+          </div>
         ))}
       </div>
-
-      {!inquiries.length ? (
-        <div className="rounded-lg border border-rsg-line bg-white p-8 text-center text-rsg-muted">
-          No inquiries yet.
-        </div>
-      ) : null}
     </div>
   );
 }

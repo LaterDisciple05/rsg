@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LockKeyhole } from "lucide-react";
-import { getAdminCredentials, getAdminSession } from "@/lib/auth";
+import { getAdminSession } from "@/lib/auth";
 import { loginAction } from "./actions";
 
 type LoginPageProps = {
@@ -14,7 +14,6 @@ type LoginPageProps = {
 export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
   const session = await getAdminSession();
   const params = await searchParams;
-  const credentials = getAdminCredentials();
 
   if (session) {
     redirect("/admin");
@@ -64,7 +63,6 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
               <input
                 name="email"
                 type="email"
-                defaultValue={credentials.email}
                 className="rounded-md border border-rsg-line px-4 py-3 text-rsg-ink outline-none focus:border-rsg-orange"
                 required
               />
@@ -76,7 +74,6 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
               <input
                 name="password"
                 type="password"
-                defaultValue={credentials.password}
                 className="rounded-md border border-rsg-line px-4 py-3 text-rsg-ink outline-none focus:border-rsg-orange"
                 required
               />

@@ -1,30 +1,67 @@
-import { Factory, Hammer, Scale, Ship } from "lucide-react";
+import {
+  Factory,
+  Globe2,
+  Hammer,
+  Package,
+  Recycle,
+  Scale,
+  Ship,
+  Truck,
+} from "lucide-react";
 import Container from "@/components/ui/container";
 
-const services = [
+type ServiceItem = {
+  title: string;
+  description?: string | null;
+  icon?: string | null;
+};
+
+const fallbackServices = [
   {
     title: "Scrap Metal Purchasing",
-    body: "Buying ferrous and non-ferrous scrap from industrial sellers, contractors, workshops, and trading partners.",
-    icon: Scale,
+    description:
+      "Buying ferrous and non-ferrous scrap from industrial sellers, contractors, workshops, and trading partners.",
+    icon: "Scale",
   },
   {
     title: "Demolition Metal Recovery",
-    body: "Recovery support where site material, handling, and metal value need practical coordination.",
-    icon: Hammer,
+    description:
+      "Recovery support where site material, handling, and metal value need practical coordination.",
+    icon: "Hammer",
   },
   {
     title: "Industrial Recycling",
-    body: "Useful recycling pathways for surplus, mixed, and end-of-life metal from commercial operations.",
-    icon: Factory,
+    description:
+      "Useful recycling pathways for surplus, mixed, and end-of-life metal from commercial operations.",
+    icon: "Factory",
   },
   {
     title: "Bulk Supply & Export",
-    body: "Export-focused coordination for recovered metal and scrap supply across Australia and India-linked markets.",
-    icon: Ship,
+    description:
+      "Export-focused coordination for recovered metal and scrap supply across Australia and India-linked markets.",
+    icon: "Ship",
   },
-];
+] satisfies ServiceItem[];
 
-export default function Services() {
+const iconMap = {
+  Factory,
+  Globe2,
+  Hammer,
+  Package,
+  Recycle,
+  Scale,
+  Ship,
+  Truck,
+};
+
+function getIcon(name?: string | null) {
+  if (!name) return Scale;
+  return iconMap[name as keyof typeof iconMap] ?? Scale;
+}
+
+export default function Services({ services = [] }: { services?: ServiceItem[] }) {
+  const visibleServices = services.length ? services : fallbackServices;
+
   return (
     <section id="services" className="bg-rsg-paper py-18 sm:py-22">
       <Container>
@@ -41,8 +78,8 @@ export default function Services() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            {services.map((service) => {
-              const Icon = service.icon;
+            {visibleServices.map((service) => {
+              const Icon = getIcon(service.icon);
               return (
                 <article
                   key={service.title}
@@ -53,7 +90,8 @@ export default function Services() {
                     {service.title}
                   </h3>
                   <p className="mt-3 text-base leading-7 text-rsg-muted">
-                    {service.body}
+                    {service.description ||
+                      "Contact Rising Sun Global to discuss this service area."}
                   </p>
                 </article>
               );

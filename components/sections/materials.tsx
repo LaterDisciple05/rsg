@@ -1,6 +1,10 @@
 import Container from "@/components/ui/container";
 
-const materials = [
+type MaterialItem = {
+  title: string;
+};
+
+const fallbackMaterials = [
   "Copper",
   "Brass",
   "Aluminium",
@@ -15,7 +19,15 @@ const materials = [
   "Bulk Export Lots",
 ];
 
-export default function Materials() {
+export default function Materials({
+  materials = [],
+}: {
+  materials?: MaterialItem[];
+}) {
+  const visibleMaterials = materials.length
+    ? materials.map((material) => material.title)
+    : fallbackMaterials;
+
   return (
     <section id="materials" className="bg-white py-20 sm:py-24">
       <Container>
@@ -33,7 +45,7 @@ export default function Materials() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {materials.map((material) => (
+            {visibleMaterials.map((material) => (
               <div
                 key={material}
                 className="rounded-md border border-rsg-line bg-rsg-paper px-4 py-4 text-sm font-black text-rsg-ink"

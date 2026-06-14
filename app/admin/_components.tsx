@@ -146,3 +146,61 @@ export function DeleteButton() {
     </button>
   );
 }
+
+export function FileUpload({
+  name,
+  label,
+  accept = "image/*",
+  required,
+}: {
+  name: string;
+  label: string;
+  accept?: string;
+  required?: boolean;
+}) {
+  return (
+    <label className="grid gap-2">
+      <span className="text-sm font-bold text-rsg-charcoal">{label}</span>
+      <input
+        name={name}
+        type="file"
+        accept={accept}
+        required={required}
+        className="rounded-md border border-rsg-line bg-white px-4 py-3 text-sm text-rsg-ink outline-none file:mr-4 file:rounded-md file:border-0 file:bg-rsg-orange-soft file:px-4 file:py-2 file:text-xs file:font-bold file:text-rsg-orange-dark hover:file:bg-rsg-orange focus:border-rsg-orange"
+      />
+    </label>
+  );
+}
+
+export function RelationSelect({
+  name,
+  label,
+  options,
+  defaultValue,
+  required,
+}: {
+  name: string;
+  label: string;
+  options: { id: string; name: string }[];
+  defaultValue?: string | null;
+  required?: boolean;
+}) {
+  return (
+    <label className="grid gap-2">
+      <span className="text-sm font-bold text-rsg-charcoal">{label}</span>
+      <select
+        name={name}
+        defaultValue={defaultValue ?? ""}
+        required={required}
+        className="rounded-md border border-rsg-line bg-white px-4 py-3 text-sm font-semibold text-rsg-ink outline-none focus:border-rsg-orange"
+      >
+        <option value="">Select {label}</option>
+        {options.map((opt) => (
+          <option key={opt.id} value={opt.id}>
+            {opt.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}

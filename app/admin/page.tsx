@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Database, PlusCircle } from "lucide-react";
-import { countTable } from "@/lib/cms-db";
 import { seedDefaultsAction } from "./actions";
+import { prisma } from "@/lib/prisma";
 
 type DashboardProps = {
   searchParams: Promise<{
@@ -9,18 +9,36 @@ type DashboardProps = {
   }>;
 };
 
-const cards = [
-  { label: "Services", table: "Service", href: "/admin/services" },
-  { label: "Materials", table: "Material", href: "/admin/materials" },
-  { label: "Projects", table: "Project", href: "/admin/projects" },
-  { label: "Testimonials", table: "Testimonial", href: "/admin/testimonials" },
-  { label: "Documents", table: "Document", href: "/admin/documents" },
-  { label: "Statistics", table: "Statistic", href: "/admin/statistics" },
-  { label: "Inquiries", table: "Inquiry", href: "/admin/inquiries" },
-];
-
 export default async function AdminDashboard({ searchParams }: DashboardProps) {
   const params = await searchParams;
+
+  const [
+    serviceCount,
+    materialCount,
+    projectCount,
+    testimonialCount,
+    documentCount,
+    statisticCount,
+    inquiryCount,
+  ] = await Promise.all([
+    prisma.service.count(),
+    prisma.material.count(),
+    prisma.project.count(),
+    prisma.testimonial.count(),
+    prisma.document.count(),
+    prisma.statistic.count(),
+    prisma.inquiry.count(),
+  ]);
+
+  const cards = [
+    { label: "Services", count: serviceCount, href: "/admin/services" },
+    { label: "Materials", count: materialCount, href: "/admin/materials" },
+    { label: "Projects", count: projectCount, href: "/admin/projects" },
+    { label: "Testimonials", count: testimonialCount, href: "/admin/testimonials" },
+    { label: "Documents", count: documentCount, href: "/admin/documents" },
+    { label: "Statistics", count: statisticCount, href: "/admin/statistics" },
+    { label: "Inquiries", count: inquiryCount, href: "/admin/inquiries" },
+  ];
 
   return (
     <div className="grid gap-8">
@@ -58,7 +76,7 @@ export default async function AdminDashboard({ searchParams }: DashboardProps) {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => (
           <Link
-            key={card.table}
+            key={card.label}
             href={card.href}
             className="rounded-lg border border-rsg-line bg-white p-5 shadow-sm hover:border-rsg-orange"
           >
@@ -67,7 +85,7 @@ export default async function AdminDashboard({ searchParams }: DashboardProps) {
               {card.label}
             </p>
             <p className="mt-2 text-4xl font-black text-rsg-ink">
-              {countTable(card.table)}
+              {card.count}
             </p>
           </Link>
         ))}

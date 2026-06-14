@@ -1,6 +1,6 @@
 import { AdminNotice, DeleteButton, PageIntro, SaveButton, TextArea, TextInput, VisibilitySelect } from "../_components";
 import { deleteServiceAction, saveServiceAction } from "../actions";
-import { listServices } from "@/lib/cms-db";
+import { prisma } from "@/lib/prisma";
 
 type PageProps = {
   searchParams: Promise<{
@@ -12,7 +12,9 @@ type PageProps = {
 
 export default async function ServicesPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const services = listServices();
+  const services = await prisma.service.findMany({
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+  });
 
   return (
     <div className="grid gap-6">
@@ -45,7 +47,7 @@ export default async function ServicesPage({ searchParams }: PageProps) {
             <div className="grid gap-5 md:grid-cols-2">
               <TextInput name="title" label="Title" defaultValue={service.title} required />
               <TextInput name="slug" label="Slug" defaultValue={service.slug} required />
-              <TextInput name="icon" label="Icon Name" defaultValue={service.icon} />
+              <TextInput name="icon" label="Icon Name" defaultValue={service.icon ?? ""} />
               <TextInput name="sortOrder" label="Sort Order" type="number" defaultValue={service.sortOrder} />
               <VisibilitySelect defaultValue={service.visibility} />
             </div>
@@ -53,12 +55,6 @@ export default async function ServicesPage({ searchParams }: PageProps) {
             <div className="flex flex-wrap gap-3">
               <SaveButton label="Save Changes" />
             </div>
-          </form>
-        ))}
-
-        {services.map((service) => (
-          <form key={`${service.id}-delete`} action={deleteServiceAction} className="hidden">
-            <input type="hidden" name="id" value={service.id} />
           </form>
         ))}
       </div>

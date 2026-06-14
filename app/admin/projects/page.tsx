@@ -1,6 +1,7 @@
-import { AdminNotice, DeleteButton, PageIntro, SaveButton, TextArea, TextInput, VisibilitySelect } from "../_components";
+import Image from "next/image";
+import { AdminNotice, DeleteButton, FileUpload, PageIntro, RelationSelect, SaveButton, TextArea, TextInput, VisibilitySelect } from "../_components";
 import { deleteProjectAction, saveProjectAction } from "../actions";
-import { listProjects } from "@/lib/cms-db";
+import { prisma } from "@/lib/prisma";
 
 type PageProps = {
   searchParams: Promise<{ saved?: string; deleted?: string; error?: string }>;
@@ -26,7 +27,16 @@ function StatusSelect({ defaultValue = "PLANNED" }: { defaultValue?: string }) {
 
 export default async function ProjectsPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const projects = listProjects();
+  const projects = await prisma.project.findMany({
+    include: { country: true, industry: true, images: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const countries = await prisma.country.findMany({ where: { isActive: true }, orderBy: { name: "asc" } });
+  const industries = await prisma.industry.findMany({ where: { visibility: "PUBLIC" }, orderBy: { sortOrder: "asc" } });
+
+  const countryOptions = countries.map(c => ({ id: c.id, name: c.name }));
+  const industryOptions = industries.map(i => ({ id: i.id, name: i.title }));
 
   return (
     <div className="grid gap-6">
@@ -43,14 +53,15 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
           <TextInput name="title" label="Title" required />
           <TextInput name="slug" label="Slug" />
           <TextInput name="category" label="Category" />
-          <TextInput name="country" label="Country" />
-          <TextInput name="industry" label="Industry" />
+          <RelationSelect name="countryId" label="Country" options={countryOptions} />
+          <RelationSelect name="industryId" label="Industry" options={industryOptions} />
           <StatusSelect />
           <VisibilitySelect defaultValue="PRIVATE" />
           <label className="flex items-center gap-3 rounded-md border border-rsg-line px-4 py-3 text-sm font-bold text-rsg-charcoal">
             <input name="featured" type="checkbox" className="h-4 w-4" />
             Featured
           </label>
+          <FileUpload name="image" label="Project Hero Image" />
         </div>
         <TextArea name="description" label="Description" />
         <div>
@@ -65,16 +76,35 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
             <div className="grid gap-5 md:grid-cols-2">
               <TextInput name="title" label="Title" defaultValue={project.title} required />
               <TextInput name="slug" label="Slug" defaultValue={project.slug} required />
-              <TextInput name="category" label="Category" defaultValue={project.category} />
-              <TextInput name="country" label="Country" defaultValue={project.country} />
-              <TextInput name="industry" label="Industry" defaultValue={project.industry} />
+              <TextInput name="category" label="Category" defaultValue={project.category ?? ""} />
+              <RelationSelect name="countryId" label="Country" options={countryOptions} defaultValue={project.countryId} />
+              <RelationSelect name="industryId" label="Industry" options={industryOptions} defaultValue={project.industryId} />
               <StatusSelect defaultValue={project.status} />
               <VisibilitySelect defaultValue={project.visibility} />
               <label className="flex items-center gap-3 rounded-md border border-rsg-line px-4 py-3 text-sm font-bold text-rsg-charcoal">
                 <input name="featured" type="checkbox" defaultChecked={project.featured} className="h-4 w-4" />
                 Featured
               </label>
+              <FileUpload name="image" label="Update Image" />
             </div>
+            {project.images.length > 0 && (
+              <div className="flex gap-2">
+                {project.images.map(img => (
+                  <div
+                    key={img.id}
+                    className="relative h-20 w-32 overflow-hidden rounded-md border border-rsg-line"
+                  >
+                    <Image
+                      src={`/uploads${img.url}`}
+                      alt={img.alt ?? ""}
+                      fill
+                      sizes="128px"
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
             <TextArea name="description" label="Description" defaultValue={project.description} />
             <div>
               <SaveButton label="Save Changes" />

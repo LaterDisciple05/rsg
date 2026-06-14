@@ -9,39 +9,80 @@ import {
 import Container from "@/components/ui/container";
 import { submitInquiryAction } from "@/app/actions";
 
-const whatsappHref =
-  "https://wa.me/61432753733?text=Hello%20Rising%20Sun%20Global%2C%20I%20would%20like%20to%20discuss%20scrap%20metal%20or%20metal%20recovery.";
+type CompanyContact = {
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  linkedinUrl?: string | null;
+  address?: string | null;
+  city?: string | null;
+  country?: string | null;
+};
 
-const contactMethods = [
-  {
-    label: "WhatsApp",
-    value: "+61 432 753 733",
-    href: whatsappHref,
-    icon: MessageCircle,
-    external: true,
-  },
-  {
-    label: "Call",
-    value: "+61 432 753 733",
-    href: "tel:+61432753733",
-    icon: Phone,
-  },
-  {
-    label: "Email",
-    value: "risingsunglobal.au@gmail.com",
-    href: "mailto:risingsunglobal.au@gmail.com",
-    icon: Mail,
-  },
-  {
-    label: "LinkedIn",
-    value: "Rahul Shah",
-    href: "https://www.linkedin.com/in/rahul-shah-707847147/",
-    icon: ExternalLink,
-    external: true,
-  },
-];
+function phoneHref(phone: string) {
+  return `tel:${phone.replace(/[^\d+]/g, "")}`;
+}
 
-export default function ContactCta() {
+function whatsappHref(phone: string, companyName: string) {
+  const number = phone.replace(/[^\d]/g, "");
+  const message = encodeURIComponent(
+    `Hello ${companyName}, I would like to discuss scrap metal or metal recovery.`
+  );
+
+  return `https://wa.me/${number}?text=${message}`;
+}
+
+function contactLocation(company?: CompanyContact | null) {
+  if (company?.address) return company.address;
+
+  return [company?.city || "Adelaide", company?.country || "Australia"]
+    .filter(Boolean)
+    .join(", ");
+}
+
+export default function ContactCta({
+  company,
+}: {
+  company?: CompanyContact | null;
+}) {
+  const companyName = company?.name || "Rising Sun Global";
+  const phone = company?.phone || "+61 432 753 733";
+  const whatsapp = company?.whatsapp || phone;
+  const email = company?.email || "risingsunglobal.au@gmail.com";
+  const linkedinUrl =
+    company?.linkedinUrl ||
+    "https://www.linkedin.com/in/rahul-shah-707847147/";
+
+  const contactMethods = [
+    {
+      label: "WhatsApp",
+      value: whatsapp,
+      href: whatsappHref(whatsapp, companyName),
+      icon: MessageCircle,
+      external: true,
+    },
+    {
+      label: "Call",
+      value: phone,
+      href: phoneHref(phone),
+      icon: Phone,
+    },
+    {
+      label: "Email",
+      value: email,
+      href: `mailto:${email}`,
+      icon: Mail,
+    },
+    {
+      label: "LinkedIn",
+      value: "Rahul Shah",
+      href: linkedinUrl,
+      icon: ExternalLink,
+      external: true,
+    },
+  ];
+
   return (
     <section id="contact" className="bg-rsg-paper py-20 sm:py-24">
       <Container>
@@ -60,7 +101,7 @@ export default function ContactCta() {
               <div className="mt-7 flex items-start gap-3 text-rsg-charcoal">
                 <MapPin className="mt-1 shrink-0 text-rsg-orange" size={21} />
                 <p className="text-base leading-7">
-                  Adelaide, Australia. Serving Australia and India.
+                  {contactLocation(company)}
                 </p>
               </div>
             </div>

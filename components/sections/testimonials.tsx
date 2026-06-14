@@ -1,6 +1,13 @@
 import { Quote, ShieldCheck, UserCheck } from "lucide-react";
 import Container from "@/components/ui/container";
 
+type PublicTestimonial = {
+  id: string;
+  customerName?: string | null;
+  companyName?: string | null;
+  message?: string | null;
+};
+
 const trustItems = [
   {
     title: "Customer words need consent",
@@ -19,7 +26,11 @@ const trustItems = [
   },
 ];
 
-export default function Testimonials() {
+export default function Testimonials({
+  testimonials = [],
+}: {
+  testimonials?: PublicTestimonial[];
+}) {
   return (
     <section id="testimonials" className="bg-white py-20 sm:py-24">
       <Container>
@@ -35,25 +46,51 @@ export default function Testimonials() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {trustItems.map((item) => {
-            const Icon = item.icon;
-            return (
+        {testimonials.length ? (
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {testimonials.map((testimonial) => (
               <article
-                key={item.title}
+                key={testimonial.id}
                 className="rounded-lg border border-rsg-line bg-rsg-paper p-6"
               >
-                <Icon className="text-rsg-orange-dark" size={26} />
-                <h3 className="mt-5 text-xl font-black text-rsg-ink">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-base leading-7 text-rsg-muted">
-                  {item.body}
+                <Quote className="text-rsg-orange-dark" size={26} />
+                <p className="mt-5 text-base leading-7 text-rsg-ink">
+                  {testimonial.message || "Trusted business feedback."}
                 </p>
+                <div className="mt-6 border-t border-rsg-line pt-4">
+                  <h3 className="text-base font-black text-rsg-ink">
+                    {testimonial.customerName || "RSG customer"}
+                  </h3>
+                  {testimonial.companyName ? (
+                    <p className="mt-1 text-sm font-semibold text-rsg-muted">
+                      {testimonial.companyName}
+                    </p>
+                  ) : null}
+                </div>
               </article>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {trustItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <article
+                  key={item.title}
+                  className="rounded-lg border border-rsg-line bg-rsg-paper p-6"
+                >
+                  <Icon className="text-rsg-orange-dark" size={26} />
+                  <h3 className="mt-5 text-xl font-black text-rsg-ink">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-base leading-7 text-rsg-muted">
+                    {item.body}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </Container>
     </section>
   );

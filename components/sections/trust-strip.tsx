@@ -1,6 +1,12 @@
 import { Factory, Globe2, Recycle } from "lucide-react";
 import Container from "@/components/ui/container";
 
+type StatisticItem = {
+  label: string;
+  value?: string | null;
+  suffix?: string | null;
+};
+
 const quickFacts = [
   {
     title: "Industrial Scrap",
@@ -19,12 +25,26 @@ const quickFacts = [
   },
 ];
 
-export default function TrustStrip() {
+const statisticIcons = [Factory, Recycle, Globe2];
+
+export default function TrustStrip({
+  statistics = [],
+}: {
+  statistics?: StatisticItem[];
+}) {
+  const facts = statistics.length
+    ? statistics.map((statistic, index) => ({
+        title: `${statistic.value ?? ""}${statistic.suffix ?? ""}`.trim() || statistic.label,
+        subtitle: statistic.label,
+        icon: statisticIcons[index % statisticIcons.length],
+      }))
+    : quickFacts;
+
   return (
     <section className="bg-white">
       <Container className="-mt-10 relative z-20">
         <div className="grid overflow-hidden rounded-lg border border-rsg-line bg-white shadow-xl shadow-rsg-navy/8 md:grid-cols-3">
-          {quickFacts.map((fact) => {
+          {facts.map((fact) => {
             const Icon = fact.icon;
             return (
               <article

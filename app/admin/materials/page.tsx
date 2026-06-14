@@ -1,6 +1,6 @@
 import { AdminNotice, DeleteButton, PageIntro, SaveButton, TextInput, VisibilitySelect } from "../_components";
 import { deleteMaterialAction, saveMaterialAction } from "../actions";
-import { listMaterials } from "@/lib/cms-db";
+import { prisma } from "@/lib/prisma";
 
 type PageProps = {
   searchParams: Promise<{ saved?: string; deleted?: string; error?: string }>;
@@ -8,14 +8,16 @@ type PageProps = {
 
 export default async function MaterialsPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const materials = listMaterials();
+  const materials = await prisma.material.findMany({
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+  });
 
   return (
     <div className="grid gap-6">
       <PageIntro
         kicker="Materials"
         title="Manage Materials"
-        body="Control the material categories that can later appear on the public website."
+        body="List the scrap materials Rising Sun Global handles."
       />
       <AdminNotice saved={params.saved} deleted={params.deleted} error={params.error} />
 
@@ -42,7 +44,7 @@ export default async function MaterialsPage({ searchParams }: PageProps) {
               <TextInput name="sortOrder" label="Sort Order" type="number" defaultValue={material.sortOrder} />
               <VisibilitySelect defaultValue={material.visibility} />
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div>
               <SaveButton label="Save Changes" />
             </div>
           </form>
