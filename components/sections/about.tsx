@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { CheckCircle2 } from "lucide-react";
 import Container from "@/components/ui/container";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 
 type CompanyContent = {
   name?: string | null;
@@ -25,7 +26,7 @@ export default function About({ company }: { company?: CompanyContent | null }) 
     <section id="about" className="bg-white py-20 sm:py-24">
       <Container>
         <div className="grid gap-12 lg:grid-cols-[1fr_0.95fr] lg:items-center">
-          <div>
+          <Reveal tone="slide-right">
             <p className="rsg-section-kicker">
               About {company?.name || "Rising Sun Global"}
             </p>
@@ -37,9 +38,9 @@ export default function About({ company }: { company?: CompanyContent | null }) 
                 "Rising Sun Global works around scrap procurement, industrial metal recovery, recycling, and export-focused supply. The website should create trust quickly, then guide serious visitors toward a direct business conversation."}
             </p>
 
-            <div className="mt-8 grid gap-4">
+            <Stagger stagger={0.11} className="mt-8 grid gap-4">
               {points.map((item) => (
-                <div key={item} className="flex gap-3">
+                <StaggerItem key={item} tone="slide-right" className="flex gap-3">
                   <CheckCircle2
                     className="mt-1 shrink-0 text-rsg-orange"
                     size={20}
@@ -47,20 +48,25 @@ export default function About({ company }: { company?: CompanyContent | null }) 
                   <p className="text-base leading-7 text-rsg-charcoal">
                     {item}
                   </p>
-                </div>
+                </StaggerItem>
               ))}
-            </div>
-          </div>
+            </Stagger>
+          </Reveal>
 
-          <div className="overflow-hidden rounded-lg border border-rsg-line bg-rsg-paper shadow-sm">
+          <Reveal
+            tone="image"
+            delay={0.12}
+            className="group relative overflow-hidden rounded-lg border border-rsg-line bg-rsg-paper shadow-sm"
+          >
+            <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-tr from-white/0 via-white/18 to-white/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             <Image
               src="/rsg_front.jpeg"
               alt="Rising Sun Global director contact card"
               width={1586}
               height={973}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.025]"
             />
-          </div>
+          </Reveal>
         </div>
       </Container>
     </section>

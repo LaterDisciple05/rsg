@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+} from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPin, Menu, MessageCircle, Phone, X } from "lucide-react";
@@ -22,6 +27,7 @@ const whatsappHref =
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   const handleLogoClick = (e: React.MouseEvent) => {
     // Only prevent navigation and trigger animation if we are already on the homepage
@@ -100,15 +106,19 @@ export default function Navbar() {
             <Link
               key={link.name}
               href={link.href}
-              className="text-[0.92rem] font-semibold text-rsg-charcoal transition-colors hover:text-rsg-orange-dark"
+              className="group relative px-0.5 py-3 text-[0.92rem] font-semibold text-rsg-charcoal transition-colors hover:text-rsg-orange-dark focus-visible:text-rsg-orange-dark"
             >
               {link.name}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-1 h-[2px] origin-left scale-x-0 rounded-full bg-rsg-orange motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out group-hover:scale-x-100 group-focus-visible:scale-x-100"
+              />
             </Link>
           ))}
 
           <Link
             href={whatsappHref}
-            className="inline-flex items-center gap-2 rounded-md bg-rsg-orange px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-rsg-orange-dark"
+            className="inline-flex items-center gap-2 rounded-md bg-rsg-orange px-5 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-rsg-orange-dark"
             target="_blank"
             rel="noreferrer"
           >
@@ -128,8 +138,15 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {isOpen ? (
-        <div className="border-t border-rsg-line bg-white px-5 py-5 shadow-lg lg:hidden">
+      <AnimatePresence>
+        {isOpen ? (
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: -10 }}
+          animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          className="border-t border-rsg-line bg-white px-5 py-5 shadow-lg lg:hidden"
+        >
           <div className="mx-auto grid max-w-7xl gap-2">
             <div className="rounded-md bg-rsg-paper p-3 text-sm font-semibold text-rsg-charcoal">
               Adelaide, Australia | +61 432 753 733
@@ -165,8 +182,9 @@ export default function Navbar() {
               </Link>
             </div>
           </div>
-        </div>
-      ) : null}
+        </motion.div>
+        ) : null}
+      </AnimatePresence>
     </header>
   );
 }

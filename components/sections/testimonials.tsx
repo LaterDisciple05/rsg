@@ -1,6 +1,7 @@
 import { Quote, ShieldCheck, UserCheck } from "lucide-react";
 import Container from "@/components/ui/container";
 import TestimonialSlider from "./testimonial-slider";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 
 type PublicTestimonial = {
   id: string;
@@ -35,7 +36,7 @@ export default function Testimonials({
   return (
     <section id="testimonials" className="bg-white py-20 sm:py-24">
       <Container>
-        <div className="max-w-3xl">
+        <Reveal tone="scale" className="max-w-3xl">
           <p className="rsg-section-kicker">Trust Standard</p>
           <h2 className="mt-4 text-3xl font-black leading-tight text-rsg-ink sm:text-5xl">
             Trust should be earned, not invented.
@@ -45,17 +46,20 @@ export default function Testimonials({
             approved, and aligned with the professionalism expected in
             industrial business.
           </p>
-        </div>
+        </Reveal>
 
         {testimonials.length ? (
-          <TestimonialSlider testimonials={testimonials} />
+          <Reveal tone="slide-left" delay={0.12}>
+            <TestimonialSlider testimonials={testimonials} />
+          </Reveal>
         ) : (
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
+          <Stagger stagger={0.1} className="mt-12 grid gap-5 md:grid-cols-3">
             {trustItems.map((item) => {
               const Icon = item.icon;
               return (
-                <article
+                <StaggerItem
                   key={item.title}
+                  tone="scale"
                   className="rounded-lg border border-rsg-line bg-rsg-paper p-6"
                 >
                   <Icon className="text-rsg-orange-dark" size={26} />
@@ -65,10 +69,10 @@ export default function Testimonials({
                   <p className="mt-3 text-base leading-7 text-rsg-muted">
                     {item.body}
                   </p>
-                </article>
+                </StaggerItem>
               );
             })}
-          </div>
+          </Stagger>
         )}
       </Container>
     </section>

@@ -107,6 +107,11 @@ img {
   mask-image: linear-gradient(90deg, black, transparent 82%);
 }
 
+.rsg-hero-drift {
+  animation: rsgHeroDrift 18s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
 .rsg-section-kicker {
   color: var(--rsg-orange-dark);
   font-size: 0.78rem;
@@ -130,4 +135,25 @@ img {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--rsg-navy);
+}
+
+@keyframes rsgHeroDrift {
+  from {
+    transform: scale(1.02) translate3d(-0.6%, 0, 0);
+  }
+
+  to {
+    transform: scale(1.08) translate3d(0.8%, -0.8%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .rsg-hero-drift {
+    animation: none;
+    transform: none;
+  }
 }

@@ -10,6 +10,7 @@ import Testimonials from "@/components/sections/testimonials";
 import TrustStrip from "@/components/sections/trust-strip";
 import WhyChoose from "@/components/sections/why-choose";
 import BrandIntro from "@/components/shared/brand-intro";
+import ScrollProgress from "@/components/shared/scroll-progress";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -84,6 +85,7 @@ export default async function HomePage() {
   return (
     <>
       <BrandIntro />
+      <ScrollProgress />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

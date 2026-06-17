@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import { writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
-import type { InquiryStatus, Prisma, ProjectStatus, Visibility } from "@/app/generated/prisma";
+import type { InquiryStatus, ProjectStatus, Visibility } from "@/app/generated/prisma";
 import { destroyAdminSession, requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -83,9 +83,36 @@ async function uploadFile(file: File | null, folder: string) {
   return `/${folder}/${filename}`;
 }
 
+function formFiles(formData: FormData, ...keys: string[]) {
+  return keys
+    .flatMap((key) => formData.getAll(key))
+    .filter((entry): entry is File => entry instanceof File && entry.size > 0);
+}
+
+function readableFileTitle(file: File) {
+  return file.name
+    .replace(/\.[^.]+$/, "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function revalidateAdmin() {
   revalidatePath("/admin", "layout");
   revalidatePath("/");
+}
+
+function documentRedirect(formData: FormData, fallback = "/admin/documents") {
+  const value = text(formData, "redirectTo");
+  return value.startsWith("/admin/documents") ? value : fallback;
+}
+
+function withQuery(path: string, key: string, value: string) {
+  const [pathname, query = ""] = path.split("?");
+  const search = new URLSearchParams(query);
+  search.set(key, value);
+
+  return `${pathname}?${search.toString()}`;
 }
 
 export async function logoutAction() {
@@ -290,44 +317,155 @@ export async function saveDocumentAction(formData: FormData) {
 
   const id = text(formData, "id");
   const title = text(formData, "title");
-  
-  const file = formData.get("file") as File;
+  const projectId = text(formData, "projectId");
+  const holderId = text(formData, "holderId");
+  const files = formFiles(formData, "files", "file");
   let fileUrl = text(formData, "existingFileUrl");
-
-  if (!id && (!file || file.size === 0)) {
-    redirect("/admin/documents?error=missing");
-  }
-
-  if (file && file.size > 0) {
-    fileUrl = (await uploadFile(file, "documents")) || fileUrl;
-  }
-
-  if (!title || !fileUrl) {
-    redirect("/admin/documents?error=missing");
-  }
-
-  const data = {
-    title,
-    fileUrl,
-    description: text(formData, "description"),
-    visibility: visibility(formData),
-  };
+  const redirectTo = documentRedirect(formData);
+  const relationData = projectId
+    ? { projectId, holderId: null }
+    : { projectId: null, holderId: holderId || null };
 
   if (id) {
+    if (files[0]) {
+      fileUrl = (await uploadFile(files[0], "documents")) || fileUrl;
+    }
+
+    if (!title || !fileUrl) {
+      redirect(withQuery(redirectTo, "error", "missing"));
+    }
+
+    const data = {
+      ...relationData,
+      title,
+      fileUrl,
+      description: text(formData, "description"),
+      visibility: visibility(formData),
+    };
+
     await prisma.document.update({ where: { id }, data });
   } else {
-    await prisma.document.create({ data });
+    if (!files.length) {
+      redirect(withQuery(redirectTo, "error", "missing"));
+    }
+
+    await Promise.all(
+      files.map(async (file, index) => {
+        const uploadedUrl = await uploadFile(file, "documents");
+        const fallbackTitle = readableFileTitle(file) || `Document ${index + 1}`;
+
+        if (!uploadedUrl) {
+          return null;
+        }
+
+        return prisma.document.create({
+          data: {
+            ...relationData,
+            title:
+              files.length === 1
+                ? title || fallbackTitle
+                : title
+                  ? `${title} - ${fallbackTitle}`
+                  : fallbackTitle,
+            fileUrl: uploadedUrl,
+            description: text(formData, "description"),
+            visibility: visibility(formData),
+          },
+        });
+      })
+    );
   }
 
+  const successRedirect = projectId
+    ? `/admin/documents?scope=projects&mode=detail&id=${projectId}`
+    : holderId
+      ? `/admin/documents?scope=company&mode=detail&id=${holderId}`
+      : redirectTo;
+
   revalidateAdmin();
-  redirect("/admin/documents?saved=1");
+  redirect(withQuery(successRedirect, "saved", "1"));
 }
 
 export async function deleteDocumentAction(formData: FormData) {
   await requireAdmin();
+  const redirectTo = documentRedirect(formData);
   await prisma.document.delete({ where: { id: text(formData, "id") } });
   revalidateAdmin();
-  redirect("/admin/documents?deleted=1");
+  redirect(withQuery(redirectTo, "deleted", "1"));
+}
+
+export async function saveCompanyDocumentHolderAction(formData: FormData) {
+  await requireAdmin();
+
+  const id = text(formData, "id");
+  const title = text(formData, "title");
+  const redirectTo = documentRedirect(
+    formData,
+    "/admin/documents?scope=company&mode=review"
+  );
+
+  if (!title) {
+    redirect(withQuery(redirectTo, "error", "missing"));
+  }
+
+  const data = {
+    title,
+    description: text(formData, "description"),
+    visibility: visibility(formData),
+  };
+
+  const holder = id
+    ? await prisma.companyDocumentHolder.update({ where: { id }, data })
+    : await prisma.companyDocumentHolder.create({ data });
+
+  const files = formFiles(formData, "files", "file");
+
+  if (files.length) {
+    await Promise.all(
+      files.map(async (file, index) => {
+        const uploadedUrl = await uploadFile(file, "documents");
+        const fallbackTitle = readableFileTitle(file) || `Document ${index + 1}`;
+
+        if (!uploadedUrl) {
+          return null;
+        }
+
+        return prisma.document.create({
+          data: {
+            holderId: holder.id,
+            projectId: null,
+            title:
+              files.length === 1
+                ? fallbackTitle
+                : `${fallbackTitle}`,
+            fileUrl: uploadedUrl,
+            description: text(formData, "documentDescription"),
+            visibility: visibility(formData),
+          },
+        });
+      })
+    );
+  }
+
+  revalidateAdmin();
+  redirect(
+    withQuery(
+      `/admin/documents?scope=company&mode=detail&id=${holder.id}`,
+      "saved",
+      "1"
+    )
+  );
+}
+
+export async function deleteCompanyDocumentHolderAction(formData: FormData) {
+  await requireAdmin();
+
+  await prisma.companyDocumentHolder.delete({
+    where: { id: text(formData, "id") },
+  });
+
+  revalidateAdmin();
+  redirect("/admin/documents?scope=company&mode=review&deleted=1");
 }
 
 export async function saveStatisticAction(formData: FormData) {

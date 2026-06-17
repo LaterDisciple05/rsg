@@ -1,59 +1,3 @@
-export function AdminNotice({
-  saved,
-  deleted,
-  error,
-}: {
-  saved?: string;
-  deleted?: string;
-  error?: string;
-}) {
-  if (saved) {
-    return (
-      <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800">
-        Saved successfully.
-      </div>
-    );
-  }
-
-  if (deleted) {
-    return (
-      <div className="rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-bold text-orange-800">
-        Deleted successfully.
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800">
-        Please complete the required fields.
-      </div>
-    );
-  }
-
-  return null;
-}
-
-export function PageIntro({
-  kicker,
-  title,
-  body,
-}: {
-  kicker: string;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div>
-      <p className="rsg-section-kicker">{kicker}</p>
-      <h1 className="mt-3 text-3xl font-black text-rsg-ink">{title}</h1>
-      <p className="mt-3 max-w-3xl text-base leading-7 text-rsg-muted">
-        {body}
-      </p>
-    </div>
-  );
-}
-
 export function TextInput({
   name,
   label,
@@ -152,11 +96,13 @@ export function FileUpload({
   label,
   accept = "image/*",
   required,
+  multiple,
 }: {
   name: string;
   label: string;
   accept?: string;
   required?: boolean;
+  multiple?: boolean;
 }) {
   return (
     <label className="grid gap-2">
@@ -166,6 +112,7 @@ export function FileUpload({
         type="file"
         accept={accept}
         required={required}
+        multiple={multiple}
         className="rounded-md border border-rsg-line bg-white px-4 py-3 text-sm text-rsg-ink outline-none file:mr-4 file:rounded-md file:border-0 file:bg-rsg-orange-soft file:px-4 file:py-2 file:text-xs file:font-bold file:text-rsg-orange-dark hover:file:bg-rsg-orange focus:border-rsg-orange"
       />
     </label>

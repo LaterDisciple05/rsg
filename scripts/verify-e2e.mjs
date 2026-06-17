@@ -289,39 +289,115 @@ try {
     assert(!(await prisma.testimonial.findUnique({ where: { id: created.id } })), "Testimonial was not deleted");
   });
 
-  await run("Documents upload/delete actions", async () => {
+  await run("Company document holder upload/delete actions", async () => {
     let uploadedPath = "";
-    let current = await page("/admin/documents");
+    let current = await page("/admin/documents?scope=company&mode=add");
     let form = findForm(
       current.body,
-      (candidate) => candidate.includes("Upload Document") && candidate.includes('name="file"'),
-      "upload document"
+      (candidate) =>
+        candidate.includes("Create Company Document Holder") &&
+        candidate.includes('name="files"'),
+      "create company document holder"
     );
     const blob = new Blob(["%PDF-1.4\n% E2E verification\n"], { type: "application/pdf" });
     await postAction(
-      "/admin/documents",
+      "/admin/documents?scope=company&mode=add",
       form,
-      { title: `${title} Document`, visibility: "PRIVATE", description: "E2E document" },
-      [{ name: "file", blob, filename: `${slug}.pdf` }]
+      {
+        title: `${title} Holder`,
+        visibility: "PRIVATE",
+        description: "E2E holder",
+        documentDescription: "E2E company document",
+      },
+      [{ name: "files", blob, filename: `${slug}.pdf` }]
     );
-    const created = await prisma.document.findFirst({
-      where: { title: `${title} Document` },
+    const holder = await prisma.companyDocumentHolder.findFirst({
+      where: { title: `${title} Holder` },
+      include: { documents: true },
       orderBy: { createdAt: "desc" },
     });
+    assert(holder, "Company document holder was not created");
+    assert(holder.documents.length === 1, "Company document was not attached to holder");
+    const created = holder.documents[0];
     assert(created?.fileUrl?.includes(slug), "Document was not uploaded");
     uploadedPath = join(process.cwd(), "uploads", created.fileUrl.replace(/^\/+/, ""));
     cleanup.push(async () => {
       if (uploadedPath) await unlink(uploadedPath).catch(() => {});
+      await prisma.document.deleteMany({ where: { holderId: holder.id } });
+      await prisma.companyDocumentHolder.delete({ where: { id: holder.id } }).catch(() => {});
     });
 
-    current = await page("/admin/documents");
+    current = await page(`/admin/documents?scope=company&mode=detail&id=${holder.id}`);
+    assert(current.body.includes(`${title} Holder`), "Holder detail did not render");
+    const companyReview = await page("/admin/documents?scope=company&mode=review");
+    assert(companyReview.body.includes(created.title), "Company review did not show uploaded document");
+    assert(companyReview.body.includes(created.fileUrl), "Company review did not link uploaded document");
     form = findForm(
       current.body,
       (candidate) => candidate.includes(created.id) && candidate.includes("Delete"),
       "delete document"
     );
-    await postAction("/admin/documents", form, { id: created.id });
+    await postAction(`/admin/documents?scope=company&mode=detail&id=${holder.id}`, form, { id: created.id });
     assert(!(await prisma.document.findUnique({ where: { id: created.id } })), "Document was not deleted");
+  });
+
+  await run("Project document multi-upload action", async () => {
+    await prisma.project.deleteMany({ where: { slug: `${slug}-document-project` } });
+    const project = await prisma.project.create({
+      data: {
+        title: `${title} Document Project`,
+        slug: `${slug}-document-project`,
+        visibility: "PRIVATE",
+      },
+    });
+    cleanup.push(async () => {
+      const docs = await prisma.document.findMany({ where: { projectId: project.id } });
+      for (const doc of docs) {
+        await unlink(join(process.cwd(), "uploads", doc.fileUrl.replace(/^\/+/, ""))).catch(() => {});
+      }
+      await prisma.document.deleteMany({ where: { projectId: project.id } });
+      await prisma.project.delete({ where: { id: project.id } }).catch(() => {});
+    });
+
+    const current = await page("/admin/documents?scope=projects&mode=add");
+    const form = findForm(
+      current.body,
+      (candidate) =>
+        candidate.includes("Add Documents To Existing Project") &&
+        candidate.includes('name="files"') &&
+        candidate.includes(project.id),
+      "project document multi-upload"
+    );
+    const first = new Blob(["%PDF-1.4\n% Project doc one\n"], { type: "application/pdf" });
+    const second = new Blob(["%PDF-1.4\n% Project doc two\n"], { type: "application/pdf" });
+    await postAction(
+      "/admin/documents?scope=projects&mode=add",
+      form,
+      {
+        projectId: project.id,
+        title: `${title} Batch`,
+        visibility: "PRIVATE",
+        description: "E2E project document batch",
+      },
+      [
+        { name: "files", blob: first, filename: `${slug}-one.pdf` },
+        { name: "files", blob: second, filename: `${slug}-two.pdf` },
+      ]
+    );
+
+    const created = await prisma.document.findMany({
+      where: { projectId: project.id },
+      orderBy: { createdAt: "desc" },
+    });
+    assert(created.length === 2, `Expected 2 project documents, got ${created.length}`);
+    assert(created.every((doc) => doc.title.startsWith(`${title} Batch`)), "Project document titles did not use the batch title");
+
+    const detail = await page(`/admin/documents?scope=projects&mode=detail&id=${project.id}`);
+    assert(detail.body.includes(`${title} Document Project`), "Project document detail did not render");
+    assert(detail.body.includes(`${title} Batch`), "Project documents were not visible in detail");
+    const review = await page("/admin/documents?scope=projects&mode=review");
+    assert(review.body.includes(`${title} Batch`), "Project review did not show uploaded documents");
+    assert(review.body.includes(created[0].fileUrl), "Project review did not link uploaded documents");
   });
 
   await run("Statistics add/delete actions reflect publicly", async () => {

@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rising Sun Global Website and CMS
 
-## Getting Started
+This is the working codebase for the Rising Sun Global public website and private admin CMS.
 
-First, run the development server:
+The public website is built with Next.js App Router. Content is managed from the admin panel and stored in PostgreSQL through Prisma.
+
+## Quick Start
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open the website at:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://127.0.0.1:3000/
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open the admin login at:
 
-## Learn More
+```text
+http://127.0.0.1:3000/admin-login
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Useful Checks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run lint
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Run these after structure changes, UI changes, admin changes, or database-related changes.
 
-## Deploy on Vercel
+## Important Files
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `app/page.tsx`: public homepage data loading and section order.
+- `app/layout.tsx`: site metadata, app shell, and global setup.
+- `app/globals.css`: brand colors, global CSS, and Tailwind theme tokens.
+- `app/actions.ts`: public enquiry form action.
+- `app/admin/actions.ts`: admin CMS create, update, delete, upload, and status actions.
+- `lib/prisma.ts`: Prisma database client.
+- `lib/auth.ts`: admin login/session helpers.
+- `prisma/schema.prisma`: database models for the CMS.
+- `RSG_PROJECT_BRAIN.md`: project vision and business rules.
+- `RSG_CHANGELOG.md`: running list of important changes.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Folder Map
+
+- `app/`: Next.js routes, pages, server actions, metadata, and route handlers.
+- `app/admin/`: protected admin CMS pages.
+- `app/admin/_components/`: reusable admin form controls and page helpers.
+- `components/layout/`: public navbar and footer.
+- `components/sections/`: public homepage sections and sliders.
+- `components/shared/`: shared public site effects/components.
+- `components/motion/`: reusable animation helpers.
+- `components/ui/`: small reusable UI primitives.
+- `lib/`: server utilities such as auth, Prisma, and class-name merging.
+- `prisma/`: database schema.
+- `public/`: static brand assets served directly by the website.
+- `uploads/`: CMS-uploaded files served through the local upload route.
+- `scripts/`: verification and maintenance scripts.
+- `docs/`: codebase guide and maintenance notes.
+
+## Where To Edit
+
+- Change homepage order or data queries in `app/page.tsx`.
+- Change public visual sections in `components/sections/`.
+- Change navbar/footer in `components/layout/`.
+- Change admin pages in `app/admin/<module>/page.tsx`.
+- Change admin save/delete/upload behavior in `app/admin/actions.ts`.
+- Change database shape in `prisma/schema.prisma`.
+- Change brand-wide CSS in `app/globals.css`.
+
+## Notes
+
+- The generated Prisma client lives in `app/generated/prisma/`. Do not edit generated files by hand.
+- Keep admin helper UI inside `app/admin/_components/`.
+- Keep real uploaded CMS files inside `uploads/`; keep bundled brand/static assets inside `public/`.
+- Use `RSG_CHANGELOG.md` whenever a change is important enough that future work should know about it.

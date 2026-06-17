@@ -1,6 +1,7 @@
 import { FileCheck2, LockKeyhole, Star } from "lucide-react";
 import Container from "@/components/ui/container";
 import ProjectSlider from "./project-slider";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 
 type PublicProject = {
   id: string;
@@ -40,7 +41,7 @@ export default function Projects({
     <section id="projects" className="bg-rsg-navy py-20 text-white sm:py-24">
       <Container>
         <div className="grid gap-16 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-          <div>
+          <Reveal tone="slide-right">
             <p className="rsg-section-kicker text-rsg-orange">
               Project Showcase
             </p>
@@ -51,12 +52,15 @@ export default function Projects({
               Explore selected industrial references and metal recovery projects executed by Rising Sun Global across Australia and India.
             </p>
             
-            <div className="mt-10 hidden grid-gap-6 lg:grid">
+            <div className="mt-10 hidden lg:grid">
               {projectPrinciples.map((p) => {
                 const Icon = p.icon;
                 return (
-                  <div key={p.title} className="flex gap-4 mb-6 last:mb-0">
-                    <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rsg-orange/10 text-rsg-orange">
+                  <div
+                    key={p.title}
+                    className="mb-6 flex gap-4 transition-transform duration-300 hover:translate-x-1 last:mb-0"
+                  >
+                    <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-rsg-orange/10 text-rsg-orange">
                       <Icon size={14} />
                     </div>
                     <div>
@@ -67,18 +71,19 @@ export default function Projects({
                 );
               })}
             </div>
-          </div>
+          </Reveal>
 
-          <div className="relative min-h-[400px]">
+          <Reveal tone="panel" delay={0.12} className="relative min-h-[400px]">
             {projects.length ? (
               <ProjectSlider projects={projects} />
             ) : (
-              <div className="grid gap-4">
+              <Stagger stagger={0.1} className="grid gap-4">
                 {projectPrinciples.map((principle) => {
                   const Icon = principle.icon;
                   return (
-                    <article
+                    <StaggerItem
                       key={principle.title}
+                      tone="scale"
                       className="rounded-lg border border-white/14 bg-white/8 p-6"
                     >
                       <Icon className="text-rsg-orange" size={25} />
@@ -88,12 +93,12 @@ export default function Projects({
                       <p className="mt-3 text-base leading-7 text-white/72">
                         {principle.body}
                       </p>
-                    </article>
+                    </StaggerItem>
                   );
                 })}
-              </div>
+              </Stagger>
             )}
-          </div>
+          </Reveal>
         </div>
       </Container>
     </section>

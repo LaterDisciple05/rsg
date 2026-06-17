@@ -9,6 +9,7 @@ import {
   Truck,
 } from "lucide-react";
 import Container from "@/components/ui/container";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 
 type ServiceItem = {
   title: string;
@@ -66,7 +67,7 @@ export default function Services({ services = [] }: { services?: ServiceItem[] }
     <section id="services" className="bg-rsg-paper py-18 sm:py-22">
       <Container>
         <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-          <div>
+          <Reveal tone="slide-right">
             <p className="rsg-section-kicker">Services</p>
             <h2 className="mt-4 text-3xl font-black leading-tight text-rsg-ink sm:text-5xl">
               Practical scrap and recovery services.
@@ -75,15 +76,16 @@ export default function Services({ services = [] }: { services?: ServiceItem[] }
               Clear service areas for sellers, contractors, recyclers, and
               trading partners.
             </p>
-          </div>
+          </Reveal>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <Stagger stagger={0.09} className="grid gap-4 md:grid-cols-2">
             {visibleServices.map((service) => {
               const Icon = getIcon(service.icon);
               return (
-                <article
+                <StaggerItem
                   key={service.title}
-                  className="rounded-lg border border-rsg-line bg-white p-6 shadow-sm"
+                  tone="card"
+                  className="rounded-lg border border-rsg-line bg-white p-6 shadow-sm transition-transform duration-300 hover:-translate-y-1"
                 >
                   <Icon className="text-rsg-orange-dark" size={26} />
                   <h3 className="mt-5 text-xl font-black text-rsg-ink">
@@ -93,10 +95,10 @@ export default function Services({ services = [] }: { services?: ServiceItem[] }
                     {service.description ||
                       "Contact Rising Sun Global to discuss this service area."}
                   </p>
-                </article>
+                </StaggerItem>
               );
             })}
-          </div>
+          </Stagger>
         </div>
       </Container>
     </section>

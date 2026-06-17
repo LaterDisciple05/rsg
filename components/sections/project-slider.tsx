@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 type PublicProject = {
@@ -27,23 +28,52 @@ function projectMeta(project: PublicProject) {
     .join(" / ");
 }
 
+const PROJECT_AUTOPLAY_MS = 3600;
+
 export default function ProjectSlider({ projects }: { projects: PublicProject[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const directionRef = useRef<1 | -1>(1);
+  const reduceMotion = useReducedMotion();
+  const lastIndex = Math.max(projects.length - 1, 0);
+  const visibleIndex = Math.min(activeIndex, lastIndex);
 
   const nextSlide = useCallback(() => {
+    directionRef.current = 1;
     setActiveIndex((current) => (current === projects.length - 1 ? 0 : current + 1));
   }, [projects.length]);
 
   const prevSlide = useCallback(() => {
+    directionRef.current = -1;
     setActiveIndex((current) => (current === 0 ? projects.length - 1 : current - 1));
+  }, [projects.length]);
+
+  const autoSlide = useCallback(() => {
+    setActiveIndex((current) => {
+      const lastIndex = projects.length - 1;
+
+      if (lastIndex <= 0) return 0;
+      const currentIndex = Math.min(current, lastIndex);
+
+      if (directionRef.current === 1 && currentIndex >= lastIndex) {
+        directionRef.current = -1;
+        return Math.max(currentIndex - 1, 0);
+      }
+
+      if (directionRef.current === -1 && currentIndex <= 0) {
+        directionRef.current = 1;
+        return Math.min(currentIndex + 1, lastIndex);
+      }
+
+      return currentIndex + directionRef.current;
+    });
   }, [projects.length]);
 
   useEffect(() => {
     if (isPaused || projects.length <= 1) return;
-    const interval = setInterval(nextSlide, 5000);
+    const interval = setInterval(autoSlide, PROJECT_AUTOPLAY_MS);
     return () => clearInterval(interval);
-  }, [nextSlide, isPaused, projects.length]);
+  }, [autoSlide, isPaused, projects.length]);
 
   if (!projects.length) return null;
 
@@ -56,7 +86,7 @@ export default function ProjectSlider({ projects }: { projects: PublicProject[] 
       <div className="overflow-hidden rounded-xl border border-white/14 bg-white/5 shadow-2xl backdrop-blur-sm">
         <div 
           className="flex transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
-          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+          style={{ transform: `translateX(-${visibleIndex * 100}%)` }}
         >
           {projects.map((project, idx) => {
             const image = project.images?.[0];
@@ -64,9 +94,18 @@ export default function ProjectSlider({ projects }: { projects: PublicProject[] 
             const imageSrc = image?.url ? `/uploads${image.url}` : null;
 
             return (
-              <article
+              <motion.article
                 key={project.id}
                 className="w-full shrink-0 flex flex-col"
+                animate={
+                  reduceMotion
+                    ? undefined
+                    : {
+                        opacity: visibleIndex === idx ? 1 : 0.55,
+                        scale: visibleIndex === idx ? 1 : 0.985,
+                      }
+                }
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               >
                 <div className="relative aspect-[16/9] w-full overflow-hidden bg-rsg-navy-deep">
                   {imageSrc ? (
@@ -106,7 +145,7 @@ export default function ProjectSlider({ projects }: { projects: PublicProject[] 
                       "Detailed industrial project execution by Rising Sun Global. Focused on efficiency, safety, and sustainable metal recovery standards."}
                   </p>
                 </div>
-              </article>
+              </motion.article>
             );
           })}
         </div>
@@ -117,7 +156,7 @@ export default function ProjectSlider({ projects }: { projects: PublicProject[] 
         <>
           <button
             onClick={prevSlide}
-            className="absolute -left-5 top-1/2 -translate-y-12 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-rsg-navy text-white shadow-xl transition-all hover:bg-rsg-orange hover:border-rsg-orange focus:outline-none sm:-left-6 lg:opacity-0 lg:group-hover:opacity-100 lg:group-hover:-translate-x-2"
+            className="absolute -left-5 top-1/2 -translate-y-12 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-rsg-navy text-white shadow-xl transition-all hover:scale-105 hover:bg-rsg-orange hover:border-rsg-orange focus:outline-none sm:-left-6 lg:opacity-0 lg:group-hover:opacity-100 lg:group-hover:-translate-x-2"
             aria-label="Previous project"
           >
             <ChevronLeft size={24} strokeWidth={2.5} />
@@ -125,7 +164,7 @@ export default function ProjectSlider({ projects }: { projects: PublicProject[] 
           
           <button
             onClick={nextSlide}
-            className="absolute -right-5 top-1/2 -translate-y-12 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-rsg-navy text-white shadow-xl transition-all hover:bg-rsg-orange hover:border-rsg-orange focus:outline-none sm:-right-6 lg:opacity-0 lg:group-hover:opacity-100 lg:group-hover:translate-x-2"
+            className="absolute -right-5 top-1/2 -translate-y-12 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-rsg-navy text-white shadow-xl transition-all hover:scale-105 hover:bg-rsg-orange hover:border-rsg-orange focus:outline-none sm:-right-6 lg:opacity-0 lg:group-hover:opacity-100 lg:group-hover:translate-x-2"
             aria-label="Next project"
           >
             <ChevronRight size={24} strokeWidth={2.5} />
@@ -136,10 +175,13 @@ export default function ProjectSlider({ projects }: { projects: PublicProject[] 
             {projects.map((_, i) => (
               <button
                 key={i}
-                onClick={() => setActiveIndex(i)}
+                onClick={() => {
+                  directionRef.current = i >= visibleIndex ? 1 : -1;
+                  setActiveIndex(i);
+                }}
                 className={cn(
                   "h-1.5 transition-all duration-300 rounded-full",
-                  i === activeIndex 
+                  i === visibleIndex 
                     ? "w-8 bg-rsg-orange" 
                     : "w-2 bg-white/20 hover:bg-white/40"
                 )}
