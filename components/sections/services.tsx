@@ -1,15 +1,7 @@
-import {
-  Factory,
-  Globe2,
-  Hammer,
-  Package,
-  Recycle,
-  Scale,
-  Ship,
-  Truck,
-} from "lucide-react";
+import Image from "next/image";
 import Container from "@/components/ui/container";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
+import { resolveRsgIconKey } from "@/components/icons";
 
 type ServiceItem = {
   title: string;
@@ -22,43 +14,27 @@ const fallbackServices = [
     title: "Scrap Metal Purchasing",
     description:
       "Buying ferrous and non-ferrous scrap from industrial sellers, contractors, workshops, and trading partners.",
-    icon: "Scale",
+    icon: "scrap-metal",
   },
   {
     title: "Demolition Metal Recovery",
     description:
       "Recovery support where site material, handling, and metal value need practical coordination.",
-    icon: "Hammer",
+    icon: "demolition",
   },
   {
     title: "Industrial Recycling",
     description:
       "Useful recycling pathways for surplus, mixed, and end-of-life metal from commercial operations.",
-    icon: "Factory",
+    icon: "industrial-recycling",
   },
   {
     title: "Bulk Supply & Export",
     description:
       "Export-focused coordination for recovered metal and scrap supply across Australia and India-linked markets.",
-    icon: "Ship",
+    icon: "bulk-export",
   },
 ] satisfies ServiceItem[];
-
-const iconMap = {
-  Factory,
-  Globe2,
-  Hammer,
-  Package,
-  Recycle,
-  Scale,
-  Ship,
-  Truck,
-};
-
-function getIcon(name?: string | null) {
-  if (!name) return Scale;
-  return iconMap[name as keyof typeof iconMap] ?? Scale;
-}
 
 export default function Services({ services = [] }: { services?: ServiceItem[] }) {
   const visibleServices = services.length ? services : fallbackServices;
@@ -80,14 +56,23 @@ export default function Services({ services = [] }: { services?: ServiceItem[] }
 
           <Stagger stagger={0.09} className="grid gap-4 md:grid-cols-2">
             {visibleServices.map((service) => {
-              const Icon = getIcon(service.icon);
+              const iconKey = resolveRsgIconKey(service.icon, "services");
               return (
                 <StaggerItem
                   key={service.title}
                   tone="card"
                   className="rounded-lg border border-rsg-line bg-white p-6 shadow-sm transition-transform duration-300 hover:-translate-y-1"
                 >
-                  <Icon className="text-rsg-orange-dark" size={26} />
+                  <div className="flex h-16 w-16 items-center justify-center text-rsg-orange-dark">
+                    <Image
+                      src={`/rsg-icons/${iconKey}.svg`}
+                      alt=""
+                      width={64}
+                      height={64}
+                      aria-hidden="true"
+                      className="h-16 w-16"
+                    />
+                  </div>
                   <h3 className="mt-5 text-xl font-black text-rsg-ink">
                     {service.title}
                   </h3>

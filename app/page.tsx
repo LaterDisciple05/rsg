@@ -12,10 +12,27 @@ import WhyChoose from "@/components/sections/why-choose";
 import BrandIntro from "@/components/shared/brand-intro";
 import ScrollProgress from "@/components/shared/scroll-progress";
 import { prisma } from "@/lib/prisma";
+import { getSectionVisibility } from "@/lib/section-visibility";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+type HomePageProps = {
+  searchParams: Promise<{
+    inquiry?: string;
+    mail?: string;
+  }>;
+};
+
+function mailStatusFromParam(value?: string) {
+  if (value === "sent" || value === "failed" || value === "not-configured") {
+    return value;
+  }
+
+  return undefined;
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = await searchParams;
   const [
     company,
     services,
@@ -23,6 +40,7 @@ export default async function HomePage() {
     projects,
     testimonials,
     statistics,
+    sectionVisibility,
   ] = await Promise.all([
     prisma.companyProfile.findUnique({ where: { id: "main" } }),
     prisma.service.findMany({
@@ -51,6 +69,7 @@ export default async function HomePage() {
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
       take: 3,
     }),
+    getSectionVisibility(),
   ]);
 
   const businessJsonLd = {
@@ -59,6 +78,7 @@ export default async function HomePage() {
     name: company?.name ?? "Rising Sun Global",
     url: "https://risingsunglobal.com",
     logo: "https://risingsunglobal.com/rsg_logo2.png",
+    taxID: "ABN No. 48 497 120 461",
     email: company?.email ?? "risingsunglobal.au@gmail.com",
     telephone: company?.phone ?? "+61432753733",
     address: {
@@ -92,19 +112,25 @@ export default async function HomePage() {
           __html: JSON.stringify(businessJsonLd).replace(/</g, "\\u003c"),
         }}
       />
-      <Navbar />
+      <Navbar sectionVisibility={sectionVisibility} />
       <main>
         <Hero />
         <TrustStrip statistics={statistics} />
         <About company={company} />
         <Services services={services} />
         <Materials materials={materials} />
-        <Projects projects={projects} />
-        <Testimonials testimonials={testimonials} />
-        <WhyChoose />
-        <ContactCta company={company} />
+        {sectionVisibility.projects ? <Projects projects={projects} /> : null}
+        {sectionVisibility.testimonials ? (
+          <Testimonials testimonials={testimonials} />
+        ) : null}
+        {sectionVisibility.whyRsg ? <WhyChoose /> : null}
+        <ContactCta
+          company={company}
+          inquiryStatus={params.inquiry === "sent" ? "sent" : undefined}
+          mailStatus={mailStatusFromParam(params.mail)}
+        />
       </main>
-      <Footer />
+      <Footer sectionVisibility={sectionVisibility} />
     </>
   );
 }

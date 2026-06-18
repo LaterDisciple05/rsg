@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { Database, PlusCircle } from "lucide-react";
 import { seedDefaultsAction } from "./actions";
+import { SectionVisibilityCard } from "./_components";
 import { prisma } from "@/lib/prisma";
+import { getSectionVisibility } from "@/lib/section-visibility";
 
 type DashboardProps = {
   searchParams: Promise<{
     seeded?: string;
+    saved?: string;
   }>;
 };
 
@@ -20,6 +23,7 @@ export default async function AdminDashboard({ searchParams }: DashboardProps) {
     documentCount,
     statisticCount,
     inquiryCount,
+    sectionVisibility,
   ] = await Promise.all([
     prisma.service.count(),
     prisma.material.count(),
@@ -28,6 +32,7 @@ export default async function AdminDashboard({ searchParams }: DashboardProps) {
     prisma.document.count(),
     prisma.statistic.count(),
     prisma.inquiry.count(),
+    getSectionVisibility(),
   ]);
 
   const cards = [
@@ -71,7 +76,20 @@ export default async function AdminDashboard({ searchParams }: DashboardProps) {
             Default company services and materials are ready.
           </div>
         ) : null}
+        {params.saved ? (
+          <div className="mt-5 rounded-md border border-rsg-orange/25 bg-rsg-orange-soft px-4 py-3 text-sm font-bold text-rsg-orange-dark">
+            Section visibility has been updated.
+          </div>
+        ) : null}
       </div>
+
+      <SectionVisibilityCard
+        section="whyRsg"
+        title="Why RSG section"
+        body="Control whether the full Why RSG section appears on the main website and in the website navigation."
+        isVisible={sectionVisibility.whyRsg}
+        redirectTo="/admin"
+      />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => (

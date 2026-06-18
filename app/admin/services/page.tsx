@@ -1,4 +1,4 @@
-import { AdminNotice, DeleteButton, PageIntro, SaveButton, TextArea, TextInput, VisibilitySelect } from "../_components";
+import { AdminNotice, DeleteButton, PageIntro, SaveButton, ServiceIconPicker, TextArea, TextInput, VisibilitySelect } from "../_components";
 import { deleteServiceAction, saveServiceAction } from "../actions";
 import { prisma } from "@/lib/prisma";
 
@@ -30,7 +30,7 @@ export default async function ServicesPage({ searchParams }: PageProps) {
         <div className="grid gap-5 md:grid-cols-2">
           <TextInput name="title" label="Title" required />
           <TextInput name="slug" label="Slug" />
-          <TextInput name="icon" label="Icon Name" />
+          <ServiceIconPicker />
           <TextInput name="sortOrder" label="Sort Order" type="number" defaultValue={0} />
           <VisibilitySelect />
         </div>
@@ -47,7 +47,7 @@ export default async function ServicesPage({ searchParams }: PageProps) {
             <div className="grid gap-5 md:grid-cols-2">
               <TextInput name="title" label="Title" defaultValue={service.title} required />
               <TextInput name="slug" label="Slug" defaultValue={service.slug} required />
-              <TextInput name="icon" label="Icon Name" defaultValue={service.icon ?? ""} />
+              <ServiceIconPicker defaultValue={service.icon} />
               <TextInput name="sortOrder" label="Sort Order" type="number" defaultValue={service.sortOrder} />
               <VisibilitySelect defaultValue={service.visibility} />
             </div>

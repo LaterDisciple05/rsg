@@ -7,27 +7,42 @@ import {
 } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, MapPin, Menu, MessageCircle, Phone, X } from "lucide-react";
+import { BadgeCheck, Mail, MapPin, Menu, MessageCircle, Phone, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import type { SectionVisibilitySettings } from "@/lib/section-visibility";
 
-const navLinks = [
+type NavLink = {
+  name: string;
+  href: string;
+  section?: keyof SectionVisibilitySettings;
+};
+
+const navLinks: NavLink[] = [
   { name: "About", href: "/#about" },
   { name: "Services", href: "/#services" },
   { name: "Materials", href: "/#materials" },
-  { name: "Projects", href: "/#projects" },
-  { name: "Testimonials", href: "/#testimonials" },
-  { name: "Why RSG", href: "/#why-rsg" },
+  { name: "Projects", href: "/#projects", section: "projects" },
+  { name: "Testimonials", href: "/#testimonials", section: "testimonials" },
+  { name: "Why RSG", href: "/#why-rsg", section: "whyRsg" },
   { name: "Contact", href: "/#contact" },
 ];
 
 const whatsappHref =
   "https://wa.me/61432753733?text=Hello%20Rising%20Sun%20Global%2C%20I%20would%20like%20to%20discuss%20scrap%20metal%20or%20metal%20recovery.";
+const abnNumber = "48 497 120 461";
 
-export default function Navbar() {
+type NavbarProps = {
+  sectionVisibility?: SectionVisibilitySettings;
+};
+
+export default function Navbar({ sectionVisibility }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const reduceMotion = useReducedMotion();
+  const visibleNavLinks = navLinks.filter(
+    (link) => !link.section || sectionVisibility?.[link.section] !== false,
+  );
 
   const handleLogoClick = (e: React.MouseEvent) => {
     // Only prevent navigation and trigger animation if we are already on the homepage
@@ -62,6 +77,10 @@ export default function Navbar() {
             <span className="inline-flex items-center gap-2">
               <MapPin size={15} />
               Adelaide, Australia
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/8 px-3 py-1 text-white/92">
+              <BadgeCheck size={15} className="text-rsg-orange" />
+              ABN No. {abnNumber}
             </span>
             <span className="text-white/60">Serving Australia and India</span>
           </div>
@@ -102,7 +121,7 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-6 lg:flex">
-          {navLinks.map((link) => (
+          {visibleNavLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
@@ -150,8 +169,12 @@ export default function Navbar() {
           <div className="mx-auto grid max-w-7xl gap-2">
             <div className="rounded-md bg-rsg-paper p-3 text-sm font-semibold text-rsg-charcoal">
               Adelaide, Australia | +61 432 753 733
+              <span className="mt-2 flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-rsg-orange-dark">
+                <BadgeCheck size={14} />
+                ABN No. {abnNumber}
+              </span>
             </div>
-            {navLinks.map((link) => (
+            {visibleNavLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}

@@ -1,6 +1,7 @@
-import { AdminNotice, DeleteButton, PageIntro, SaveButton, TextArea, TextInput, VisibilitySelect } from "../_components";
+import { AdminNotice, DeleteButton, PageIntro, SaveButton, SectionVisibilityCard, TextArea, TextInput, VisibilitySelect } from "../_components";
 import { deleteTestimonialAction, saveTestimonialAction } from "../actions";
 import { prisma } from "@/lib/prisma";
+import { getSectionVisibility } from "@/lib/section-visibility";
 
 type PageProps = {
   searchParams: Promise<{ saved?: string; deleted?: string; error?: string }>;
@@ -8,9 +9,12 @@ type PageProps = {
 
 export default async function TestimonialsPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const testimonials = await prisma.testimonial.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  const [testimonials, sectionVisibility] = await Promise.all([
+    prisma.testimonial.findMany({
+      orderBy: { createdAt: "desc" },
+    }),
+    getSectionVisibility(),
+  ]);
 
   return (
     <div className="grid gap-6">
@@ -20,6 +24,14 @@ export default async function TestimonialsPage({ searchParams }: PageProps) {
         body="Showcase customer trust and reviews."
       />
       <AdminNotice saved={params.saved} deleted={params.deleted} error={params.error} />
+
+      <SectionVisibilityCard
+        section="testimonials"
+        title="Testimonial Section Visibility"
+        body="Control whether the complete Testimonials section appears on the public website."
+        isVisible={sectionVisibility.testimonials}
+        redirectTo="/admin/testimonials"
+      />
 
       <form action={saveTestimonialAction} className="grid gap-5 rounded-lg border border-rsg-line bg-white p-6 shadow-sm">
         <h2 className="text-xl font-black text-rsg-ink">Add Testimonial</h2>

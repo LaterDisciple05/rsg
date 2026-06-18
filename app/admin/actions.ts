@@ -13,6 +13,14 @@ import { existsSync } from "node:fs";
 import type { InquiryStatus, ProjectStatus, Visibility } from "@/app/generated/prisma";
 import { destroyAdminSession, requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  isValidEmail,
+  saveInquiryEmailSettings,
+} from "@/lib/inquiry-email-settings";
+import {
+  isSectionVisibilityKey,
+  saveSectionVisibility,
+} from "@/lib/section-visibility";
 
 function text(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -284,6 +292,22 @@ export async function deleteProjectAction(formData: FormData) {
   redirect("/admin/projects?deleted=1");
 }
 
+export async function saveSectionVisibilityAction(formData: FormData) {
+  await requireAdmin();
+
+  const section = text(formData, "section");
+  const redirectTo = text(formData, "redirectTo");
+  const safeRedirectTo = redirectTo.startsWith("/admin/") ? redirectTo : "/admin";
+
+  if (!isSectionVisibilityKey(section)) {
+    redirect(withQuery(safeRedirectTo, "error", "invalid"));
+  }
+
+  await saveSectionVisibility(section, text(formData, "isVisible") === "on");
+  revalidateAdmin();
+  redirect(withQuery(safeRedirectTo, "saved", "1"));
+}
+
 export async function saveTestimonialAction(formData: FormData) {
   await requireAdmin();
 
@@ -517,6 +541,21 @@ export async function updateInquiryStatusAction(formData: FormData) {
   redirect("/admin/inquiries?saved=1");
 }
 
+export async function saveInquiryEmailSettingsAction(formData: FormData) {
+  await requireAdmin();
+
+  const senderEmail = text(formData, "senderEmail");
+  const receiverEmail = text(formData, "receiverEmail");
+
+  if (!isValidEmail(senderEmail) || !isValidEmail(receiverEmail)) {
+    redirect("/admin/inquiries?emailError=1");
+  }
+
+  await saveInquiryEmailSettings({ senderEmail, receiverEmail });
+  revalidateAdmin();
+  redirect("/admin/inquiries?emailSettings=1");
+}
+
 export async function deleteInquiryAction(formData: FormData) {
   await requireAdmin();
   await prisma.inquiry.delete({ where: { id: text(formData, "id") } });
@@ -544,10 +583,10 @@ export async function seedDefaultsAction() {
   });
 
   const services = [
-    { title: "Scrap Metal Purchasing", slug: "scrap-metal-purchasing", description: "Buying ferrous and non-ferrous scrap from industrial sellers.", sortOrder: 1 },
-    { title: "Demolition Metal Recovery", slug: "demolition-metal-recovery", description: "Recovery support for demolition and surplus metal streams.", sortOrder: 2 },
-    { title: "Industrial Recycling", slug: "industrial-recycling", description: "Recycling pathways for commercial metal operations.", sortOrder: 3 },
-    { title: "Bulk Supply & Export", slug: "bulk-supply-export", description: "Export-focused coordination for recovered metal supply.", sortOrder: 4 },
+    { title: "Scrap Metal Purchasing", slug: "scrap-metal-purchasing", description: "Buying ferrous and non-ferrous scrap from industrial sellers.", icon: "scrap-metal", sortOrder: 1 },
+    { title: "Demolition Metal Recovery", slug: "demolition-metal-recovery", description: "Recovery support for demolition and surplus metal streams.", icon: "demolition", sortOrder: 2 },
+    { title: "Industrial Recycling", slug: "industrial-recycling", description: "Recycling pathways for commercial metal operations.", icon: "industrial-recycling", sortOrder: 3 },
+    { title: "Bulk Supply & Export", slug: "bulk-supply-export", description: "Export-focused coordination for recovered metal supply.", icon: "bulk-export", sortOrder: 4 },
   ];
 
   for (const s of services) {

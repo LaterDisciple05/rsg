@@ -1,14 +1,17 @@
 import Link from "next/link";
 import {
+  BadgeCheck,
   ExternalLink,
   Mail,
   MapPin,
   MessageCircle,
   Phone,
+  TriangleAlert,
 } from "lucide-react";
 import Container from "@/components/ui/container";
 import { submitInquiryAction } from "@/app/actions";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
+import ContactSubmitState from "@/components/sections/contact-submit-state";
 
 type CompanyContact = {
   name?: string | null;
@@ -20,6 +23,9 @@ type CompanyContact = {
   city?: string | null;
   country?: string | null;
 };
+
+type InquiryStatus = "sent";
+type MailStatus = "sent" | "failed" | "not-configured";
 
 function phoneHref(phone: string) {
   return `tel:${phone.replace(/[^\d+]/g, "")}`;
@@ -44,8 +50,12 @@ function contactLocation(company?: CompanyContact | null) {
 
 export default function ContactCta({
   company,
+  inquiryStatus,
+  mailStatus,
 }: {
   company?: CompanyContact | null;
+  inquiryStatus?: InquiryStatus;
+  mailStatus?: MailStatus;
 }) {
   const companyName = company?.name || "Rising Sun Global";
   const phone = company?.phone || "+61 432 753 733";
@@ -54,6 +64,25 @@ export default function ContactCta({
   const linkedinUrl =
     company?.linkedinUrl ||
     "https://www.linkedin.com/in/rahul-shah-707847147/";
+  const inquiryNotice =
+    inquiryStatus === "sent"
+      ? mailStatus === "sent"
+        ? {
+            title: "Enquiry received",
+            message: "Your enquiry has been saved and emailed to the team.",
+            tone: "success",
+            className: "border-rsg-orange/30 bg-white text-rsg-ink",
+            iconClassName: "bg-rsg-orange-soft text-rsg-orange-dark",
+          }
+        : {
+            title: "Enquiry saved",
+            message:
+              "Your enquiry is saved in the CMS. The email alert needs attention.",
+            tone: "warning",
+            className: "border-rsg-orange/35 bg-rsg-orange-soft text-rsg-ink",
+            iconClassName: "bg-white text-rsg-orange-dark",
+          }
+      : null;
 
   const contactMethods = [
     {
@@ -144,6 +173,32 @@ export default function ContactCta({
                   <h3 className="text-xl font-black text-rsg-ink">
                     Send an enquiry
                   </h3>
+                  {inquiryNotice ? (
+                    <div
+                      className={`relative overflow-hidden rounded-md border px-4 py-3 text-sm shadow-sm ${inquiryNotice.className}`}
+                    >
+                      <div className="absolute inset-y-0 left-0 w-1 bg-rsg-orange" />
+                      <div className="flex gap-3 pl-1">
+                        <span
+                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${inquiryNotice.iconClassName}`}
+                        >
+                          {inquiryNotice.tone === "success" ? (
+                            <BadgeCheck size={18} aria-hidden="true" />
+                          ) : (
+                            <TriangleAlert size={18} aria-hidden="true" />
+                          )}
+                        </span>
+                        <div>
+                          <p className="font-black text-rsg-ink">
+                            {inquiryNotice.title}
+                          </p>
+                          <p className="mt-1 leading-6 text-rsg-muted">
+                            {inquiryNotice.message}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                   <div className="grid gap-4 sm:grid-cols-2">
                     <input
                       name="name"
@@ -188,12 +243,7 @@ export default function ContactCta({
                     rows={4}
                     className="rounded-md border border-rsg-line px-4 py-3 text-sm leading-6 outline-none focus:border-rsg-orange"
                   />
-                  <button
-                    type="submit"
-                    className="rounded-md bg-rsg-orange px-5 py-3 text-sm font-black text-white hover:bg-rsg-orange-dark"
-                  >
-                    Send Enquiry
-                  </button>
+                  <ContactSubmitState />
                 </form>
               </Reveal>
             </div>

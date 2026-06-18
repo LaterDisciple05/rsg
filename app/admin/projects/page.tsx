@@ -1,7 +1,8 @@
 import Image from "next/image";
-import { AdminNotice, DeleteButton, FileUpload, PageIntro, SaveButton, TextArea, TextInput, VisibilitySelect } from "../_components";
+import { AdminNotice, DeleteButton, FileUpload, PageIntro, SaveButton, SectionVisibilityCard, TextArea, TextInput, VisibilitySelect } from "../_components";
 import { deleteProjectAction, saveProjectAction } from "../actions";
 import { prisma } from "@/lib/prisma";
+import { getSectionVisibility } from "@/lib/section-visibility";
 
 type PageProps = {
   searchParams: Promise<{ saved?: string; deleted?: string; error?: string }>;
@@ -27,10 +28,13 @@ function StatusSelect({ defaultValue = "PLANNED" }: { defaultValue?: string }) {
 
 export default async function ProjectsPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const projects = await prisma.project.findMany({
-    include: { images: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const [projects, sectionVisibility] = await Promise.all([
+    prisma.project.findMany({
+      include: { images: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    getSectionVisibility(),
+  ]);
 
   return (
     <div className="grid gap-6">
@@ -40,6 +44,14 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
         body="Store public or private project records. Publish only approved work."
       />
       <AdminNotice saved={params.saved} deleted={params.deleted} error={params.error} />
+
+      <SectionVisibilityCard
+        section="projects"
+        title="Project Section Visibility"
+        body="Control whether the complete Projects section appears on the public website."
+        isVisible={sectionVisibility.projects}
+        redirectTo="/admin/projects"
+      />
 
       <form action={saveProjectAction} className="grid gap-5 rounded-lg border border-rsg-line bg-white p-6 shadow-sm">
         <h2 className="text-xl font-black text-rsg-ink">Add Project</h2>
