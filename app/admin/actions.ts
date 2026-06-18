@@ -544,14 +544,13 @@ export async function updateInquiryStatusAction(formData: FormData) {
 export async function saveInquiryEmailSettingsAction(formData: FormData) {
   await requireAdmin();
 
-  const senderEmail = text(formData, "senderEmail");
   const receiverEmail = text(formData, "receiverEmail");
 
-  if (!isValidEmail(senderEmail) || !isValidEmail(receiverEmail)) {
+  if (!isValidEmail(receiverEmail)) {
     redirect("/admin/inquiries?emailError=1");
   }
 
-  await saveInquiryEmailSettings({ senderEmail, receiverEmail });
+  await saveInquiryEmailSettings({ receiverEmail });
   revalidateAdmin();
   redirect("/admin/inquiries?emailSettings=1");
 }

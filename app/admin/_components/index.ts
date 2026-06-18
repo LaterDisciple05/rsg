@@ -1,4 +1,4 @@
-export { AdminNotice } from "./feedback";
+export { AdminNotice, DismissibleAdminNotice } from "./feedback";
 export { PageIntro } from "./page-intro";
 export { SectionVisibilityCard } from "./section-visibility-card";
 export { ServiceIconPicker } from "./service-icon-picker";

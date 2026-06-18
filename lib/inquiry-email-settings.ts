@@ -3,7 +3,6 @@ import { dirname, join } from "node:path";
 import { prisma } from "@/lib/prisma";
 
 export type InquiryEmailSettings = {
-  senderEmail: string;
   receiverEmail: string;
 };
 
@@ -17,7 +16,6 @@ function env(name: string) {
 
 function defaultInquiryEmailSettings(): InquiryEmailSettings {
   return {
-    senderEmail: env("SMTP_FROM") || env("SMTP_USER") || defaultAdminEmail,
     receiverEmail: env("INQUIRY_EMAIL_TO") || defaultAdminEmail,
   };
 }
@@ -80,7 +78,6 @@ function normalizeInquiryEmailSettings(
   defaults: InquiryEmailSettings,
 ): InquiryEmailSettings {
   return {
-    senderEmail: settings.senderEmail?.trim() || defaults.senderEmail,
     receiverEmail: settings.receiverEmail?.trim() || defaults.receiverEmail,
   };
 }
@@ -89,7 +86,6 @@ export async function saveInquiryEmailSettings(
   settings: InquiryEmailSettings,
 ) {
   const nextSettings = {
-    senderEmail: settings.senderEmail.trim(),
     receiverEmail: settings.receiverEmail.trim(),
   };
 

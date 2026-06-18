@@ -1,3 +1,44 @@
+"use client";
+
+import { useEffect, useState, type ReactNode } from "react";
+
+type DismissibleAdminNoticeProps = {
+  children: ReactNode;
+  className: string;
+  removeParams?: string[];
+};
+
+export function DismissibleAdminNotice({
+  children,
+  className,
+  removeParams = [],
+}: DismissibleAdminNoticeProps) {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setIsVisible(false);
+
+      if (removeParams.length) {
+        const url = new URL(window.location.href);
+        removeParams.forEach((param) => url.searchParams.delete(param));
+        const query = url.searchParams.toString();
+        window.history.replaceState(
+          null,
+          "",
+          `${url.pathname}${query ? `?${query}` : ""}${url.hash}`,
+        );
+      }
+    }, 3600);
+
+    return () => window.clearTimeout(timer);
+  }, [removeParams]);
+
+  if (!isVisible) return null;
+
+  return <div className={className}>{children}</div>;
+}
+
 export function AdminNotice({
   saved,
   deleted,
@@ -9,25 +50,34 @@ export function AdminNotice({
 }) {
   if (saved) {
     return (
-      <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800">
+      <DismissibleAdminNotice
+        removeParams={["saved"]}
+        className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800"
+      >
         Saved successfully.
-      </div>
+      </DismissibleAdminNotice>
     );
   }
 
   if (deleted) {
     return (
-      <div className="rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-bold text-orange-800">
+      <DismissibleAdminNotice
+        removeParams={["deleted"]}
+        className="rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-bold text-orange-800"
+      >
         Deleted successfully.
-      </div>
+      </DismissibleAdminNotice>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800">
+      <DismissibleAdminNotice
+        removeParams={["error"]}
+        className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+      >
         Please complete the required fields.
-      </div>
+      </DismissibleAdminNotice>
     );
   }
 

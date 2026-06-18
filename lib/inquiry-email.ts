@@ -71,7 +71,7 @@ async function getSmtpConfig(): Promise<SmtpConfig | null> {
     secure: env("SMTP_SECURE") !== "false",
     user,
     pass,
-    from: emailSettings.senderEmail || env("SMTP_FROM") || user,
+    from: env("SMTP_FROM") || user,
     to: emailSettings.receiverEmail || env("INQUIRY_EMAIL_TO") || defaultAdminEmail,
   };
 }

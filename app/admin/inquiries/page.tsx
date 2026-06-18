@@ -2,6 +2,7 @@ import { MailCheck, Send } from "lucide-react";
 import {
   AdminNotice,
   DeleteButton,
+  DismissibleAdminNotice,
   PageIntro,
   SaveButton,
   TextInput,
@@ -58,14 +59,20 @@ export default async function InquiriesPage({ searchParams }: PageProps) {
       />
       <AdminNotice saved={params.saved} deleted={params.deleted} />
       {params.emailSettings ? (
-        <div className="rounded-md border border-rsg-orange/25 bg-rsg-orange-soft px-4 py-3 text-sm font-bold text-rsg-orange-dark">
+        <DismissibleAdminNotice
+          removeParams={["emailSettings"]}
+          className="rounded-md border border-rsg-orange/25 bg-rsg-orange-soft px-4 py-3 text-sm font-bold text-rsg-orange-dark"
+        >
           Inquiry email settings saved.
-        </div>
+        </DismissibleAdminNotice>
       ) : null}
       {params.emailError ? (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800">
-          Please enter valid sender and receiver email addresses.
-        </div>
+        <DismissibleAdminNotice
+          removeParams={["emailError"]}
+          className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+        >
+          Please enter a valid receive email address.
+        </DismissibleAdminNotice>
       ) : null}
 
       <form
@@ -82,24 +89,17 @@ export default async function InquiriesPage({ searchParams }: PageProps) {
                 Inquiry Email Routing
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-rsg-muted">
-                Set the email shown as sender and the email that receives new
-                website inquiries.
+                Set the email address that receives new website inquiries.
+                Sender stays protected in SMTP settings.
               </p>
             </div>
           </div>
           <div className="rounded-md border border-rsg-line bg-rsg-paper px-3 py-2 text-xs font-bold text-rsg-muted">
-            Password stays protected in server settings.
+            Sender and password stay protected in server settings.
           </div>
         </div>
 
-        <div className="mt-5 grid gap-5 md:grid-cols-2">
-          <TextInput
-            name="senderEmail"
-            label="Sender Email"
-            type="email"
-            defaultValue={emailSettings.senderEmail}
-            required
-          />
+        <div className="mt-5 max-w-2xl">
           <TextInput
             name="receiverEmail"
             label="Inquiry Receive Email"
