@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { prisma } from "@/lib/prisma";
 
 export type SectionVisibilityKey = "projects" | "testimonials" | "whyRsg";
 
@@ -10,12 +11,30 @@ const sectionVisibilityPath = join(
   "config",
   "section-visibility.json",
 );
+const sectionVisibilitySettingKey = "sectionVisibility";
 
 const defaultSectionVisibility: SectionVisibilitySettings = {
   projects: true,
   testimonials: true,
   whyRsg: true,
 };
+
+async function saveLocalSectionVisibilityBackup(
+  settings: SectionVisibilitySettings,
+) {
+  if (process.env.NODE_ENV === "production") return;
+
+  try {
+    await mkdir(dirname(sectionVisibilityPath), { recursive: true });
+    await writeFile(
+      sectionVisibilityPath,
+      `${JSON.stringify(settings, null, 2)}\n`,
+      "utf8",
+    );
+  } catch (error) {
+    console.warn("Local section visibility backup could not be saved.", error);
+  }
+}
 
 export function isSectionVisibilityKey(
   value: string,
@@ -25,26 +44,51 @@ export function isSectionVisibilityKey(
 
 export async function getSectionVisibility(): Promise<SectionVisibilitySettings> {
   try {
+    const storedSettings = await prisma.siteSetting.findUnique({
+      where: { key: sectionVisibilitySettingKey },
+    });
+    const parsedSettings = storedSettings?.value as
+      | Partial<SectionVisibilitySettings>
+      | null
+      | undefined;
+
+    if (parsedSettings) {
+      return normalizeSectionVisibility(parsedSettings);
+    }
+  } catch (error) {
+    console.warn(
+      "Database section visibility settings are unavailable. Falling back to local settings.",
+      error,
+    );
+  }
+
+  try {
     const rawSettings = await readFile(sectionVisibilityPath, "utf8");
     const parsedSettings = JSON.parse(rawSettings) as Partial<SectionVisibilitySettings>;
 
-    return {
-      projects:
-        typeof parsedSettings.projects === "boolean"
-          ? parsedSettings.projects
-          : defaultSectionVisibility.projects,
-      testimonials:
-        typeof parsedSettings.testimonials === "boolean"
-          ? parsedSettings.testimonials
-          : defaultSectionVisibility.testimonials,
-      whyRsg:
-        typeof parsedSettings.whyRsg === "boolean"
-          ? parsedSettings.whyRsg
-          : defaultSectionVisibility.whyRsg,
-    };
+    return normalizeSectionVisibility(parsedSettings);
   } catch {
     return defaultSectionVisibility;
   }
+}
+
+function normalizeSectionVisibility(
+  settings: Partial<SectionVisibilitySettings>,
+): SectionVisibilitySettings {
+  return {
+    projects:
+      typeof settings.projects === "boolean"
+        ? settings.projects
+        : defaultSectionVisibility.projects,
+    testimonials:
+      typeof settings.testimonials === "boolean"
+        ? settings.testimonials
+        : defaultSectionVisibility.testimonials,
+    whyRsg:
+      typeof settings.whyRsg === "boolean"
+        ? settings.whyRsg
+        : defaultSectionVisibility.whyRsg,
+  };
 }
 
 export async function saveSectionVisibility(
@@ -57,12 +101,18 @@ export async function saveSectionVisibility(
     [section]: isVisible,
   };
 
-  await mkdir(dirname(sectionVisibilityPath), { recursive: true });
-  await writeFile(
-    sectionVisibilityPath,
-    `${JSON.stringify(nextSettings, null, 2)}\n`,
-    "utf8",
-  );
+  await prisma.siteSetting.upsert({
+    where: { key: sectionVisibilitySettingKey },
+    create: {
+      key: sectionVisibilitySettingKey,
+      value: nextSettings,
+    },
+    update: {
+      value: nextSettings,
+    },
+  });
+
+  await saveLocalSectionVisibilityBackup(nextSettings);
 
   return nextSettings;
 }
